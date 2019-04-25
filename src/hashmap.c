@@ -10,7 +10,7 @@ typedef struct Bucket* Bucket;
 
 struct Bucket{
     void* content;
-    void* key;
+    char* key;
     struct Bucket* next;
 };
 
@@ -39,6 +39,9 @@ Hashmap newHashmap(unsigned int sizeInBits){
 
 void deleteCitiesHashmap(Hashmap hashmap){
     //keys are taken to be static char*
+    if(!hashmap){
+        return;
+    }
     for(unsigned int i = 0; i < (1u<<hashmap->keySizeInBits); i++){
         while(hashmap->buckets[i] != NULL){
             Bucket backup = hashmap->buckets[i]->next;
@@ -52,7 +55,7 @@ void deleteCitiesHashmap(Hashmap hashmap){
 
 //hashing function concept and magic numbers derived from https://en.wikipedia.org/wiki/Jenkins_hash_function
 
-uint32_t hash(const char* key, unsigned int bits){
+static uint32_t hash(const char* key, unsigned int bits){
     int keyLength = strlen(key);
     uint32_t  hash = 0;
     uint32_t mask = 1u << (bits-1);
@@ -71,6 +74,9 @@ uint32_t hash(const char* key, unsigned int bits){
 }
 
 City getCity(Hashmap hashmap, const char* city1){
+    if(!hashmap){
+        return NULL;
+    }
     Bucket bucket = hashmap->buckets[hash(city1, hashmap->keySizeInBits)];
     while(bucket != NULL){
         if(strcmp(city1, bucket->key) == 0){
@@ -81,7 +87,39 @@ City getCity(Hashmap hashmap, const char* city1){
     return NULL;
 }
 
-_Bool addCity (Hashmap hashmap, City city1) {
+bool removeCity (Hashmap hashmap, const char* city1) {
+    if(!hashmap){
+        return NULL;
+    }
+    uint32_t address = hash(city1, hashmap->keySizeInBits);
+    //If stored in root:
+    if(strcmp(hashmap->buckets[address]->key, city1)==0){
+        Bucket next = hashmap->buckets[address]->next;
+        freeCity(hashmap->buckets[address]->content);
+        free(hashmap->buckets[address]);
+        hashmap->buckets[address]=next;
+        return true;
+    }
+    //If not stored in root:
+    Bucket previous = hashmap->buckets[address];
+    Bucket current = previous->next;
+    while(current != NULL){
+        if(strcmp(city1, current->key) == 0){
+            previous->next = current->next;
+            freeCity(current->content);
+            free(current);
+            return true;
+        }
+        previous = current;
+        current = current->next;
+    }
+    return false;
+}
+
+bool addCity (Hashmap hashmap, City city1) {
+    if(!hashmap || !city1){
+        return NULL;
+    }
     uint32_t address = hash(city1->name, hashmap->keySizeInBits);
     Bucket new = malloc(sizeof(struct Bucket));
     if (!new) {

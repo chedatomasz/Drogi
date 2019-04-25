@@ -8,10 +8,12 @@
 
 #include <stddef.h>
 #include <string.h>
+#include <stdlib.h>
 #include "map.h"
 #include "route.h"
 #include "hashmap.h"
 
+static bool verifyCityName(const char *city);
 
 struct Map {
     Route routes[NUMBER_OF_ROUTES];
@@ -19,24 +21,35 @@ struct Map {
 };
 
 Map* newMap(void){
-    return NULL;
+    Map* result = malloc(sizeof(struct Map));
+    if(!result){
+        return NULL;
+    }
+    for(int i = 0; i < NUMBER_OF_ROUTES; i++){
+        result->routes[i] = NULL;
+    }
+    result->cities = newHashmap(20);
+    if(result->cities == NULL){
+        free(result);
+        return NULL;
+    }
+    return result;
 }
 
 
 void deleteMap(Map* map){
-
+    if(!map){
+        return;
+    }
+    deleteCitiesHashmap(map->cities);
+    free(map);
 }
 
-static bool verifyCityName(const char *city);
-
 bool addRoad(Map *map, const char *city1, const char *city2, unsigned length, int builtYear){
-    if(!map){
+    if(!map || !city1 || !city2){
         return false;
     }
-    if(!verifyCityName(city1) || !verifyCityName(city2)){
-        return false;
-    }
-    if(strcmp(city1, city2)==0){
+    if(!verifyCityName(city1) || !verifyCityName(city2) || builtYear == 0 || strcmp(city1, city2)==0){
         return false;
     }
     bool firstCityAdded = false;
@@ -71,10 +84,19 @@ bool addRoad(Map *map, const char *city1, const char *city2, unsigned length, in
         }
         secondCityAdded = true;
     }
-    //sprawdz czy odcinek juz istnieje
-    //jak nie sprobuj dodac
-    //jak sie nie uda usun zaalokowane miasta
-
+    if(getConnection(city1, city2)){
+        return false;
+    }
+    if(!addConnection(city1Pointer, city2Pointer, length, builtYear)){
+        if(firstCityAdded){
+            freeCity(city1Pointer);
+        }
+        if(secondCityAdded){
+            freeCity(city2Pointer);
+        }
+        return false;
+    }
+    return true;
 }
 
 bool repairRoad(Map *map, const char *city1, const char *city2, int repairYear){

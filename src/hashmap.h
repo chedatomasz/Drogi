@@ -6,6 +6,7 @@
 #define DROGI_HASHMAP_H
 
 #include <stdbool.h>
+#include <stdint.h>
 #include "city.h"
 
 /**
@@ -58,4 +59,5 @@ bool addCity (Hashmap hashmap, City city1);
  */
 bool removeCity (Hashmap hashmap, const char* city1);
 
+uint32_t hash(const char* key, unsigned int bits);
 #endif //DROGI_HASHMAP_H

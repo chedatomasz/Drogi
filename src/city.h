@@ -6,13 +6,14 @@
 #define DROGI_CITY_H
 
 
-
 /**
  * Struktura przechowująca miasto i jego połączenia.
  */
 typedef struct City* City;
+
 struct City {
-    char* name;
+    const char* name;
+    struct ConnectionTree* root;
 };
 
 /** @brief Usuwa strukturę.

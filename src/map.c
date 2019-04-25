@@ -4,9 +4,17 @@
  * @author Tomasz Cheda <tomasz.cheda@students.mimuw.edu.pl>
  * @date 24.04.2019
  */
+#define NUMBER_OF_ROUTES 1000
 
 #include <stddef.h>
 #include "map.h"
+#include "route.h"
+#include "hashmap.h"
+
+struct Map {
+    Route routes[NUMBER_OF_ROUTES];
+    Hashmap cities;
+};
 
 Map* newMap(void){
     return NULL;

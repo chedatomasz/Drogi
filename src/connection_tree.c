@@ -146,13 +146,13 @@ static int compareNodes2(ConnectionTree t1, City t2, uint32_t key){
     return strcmp(t2->name, t1->content->city2->name);
 }
 void removeNode(ConnectionTree* target){
-    if(!(*target)->left && !(*target)->right){
+    if(!((*target)->left) && !((*target)->right)){;
         free((*target)->content);
         free(*target);
         *target=NULL;
         return;
     }
-    if(!(*target)->left){
+    if(!((*target)->left)){
         ConnectionTree temp = (*target)->right;
         free((*target)->content);
         free(*target);
@@ -173,20 +173,23 @@ void removeNode(ConnectionTree* target){
     free((*target)->content);
     (*target)->content=(*minRightSubTree)->content;
     (*target)->key=(*minRightSubTree)->key;
+    (*minRightSubTree)->content = NULL;
     removeNode(minRightSubTree);
 }
 void removeConnection(City city1, City city2){
-    ConnectionTree* start = &(city1->root);
-    while(start!= NULL){
+    ConnectionTree *start = &(city1->root);
+    city1->numOfConnections--;
+    while(*start!= NULL){
         int comparison = compareNodes2(*start, city2, hash(city2->name, KEY_LENGTH));
         if(comparison<0){
-            start = &((*start)->left);
+           start = &((*start)->left);
         }
         else if(comparison > 0){
             start = &((*start)->right);
         }
         else{
             removeNode(start);
+            return;
         }
     }
 }

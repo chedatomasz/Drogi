@@ -105,7 +105,7 @@ bool addRoad(Map *map, const char *city1, const char *city2, unsigned length, in
     if(!map || !city1 || !city2){
         return false;
     }
-    if(!verifyCityName(city1) || !verifyCityName(city2) || builtYear == 0 || strcmp(city1, city2)==0){
+    if(!verifyCityName(city1) || !verifyCityName(city2) || builtYear == 0 || length == 0|| strcmp(city1, city2)==0){
         return false;
     }
     CityList list1 = NULL;
@@ -313,6 +313,7 @@ bool extendRoute(Map *map, unsigned routeId, const char *city){
             iterator = iterator->next;
         }
         free(iterator->next);
+        iterator->next=NULL;
         if(addRouteToCities(toFirstCity, routeId)){
             iterator->next = map->routes[routeId]->first;
             map->routes[routeId]->first = toFirstCity;
@@ -377,13 +378,10 @@ bool extendRoute(Map *map, unsigned routeId, const char *city){
 
 bool areInOrder(Map *map, City city1, City city2, int route){
     CityList iterator = map->routes[route]->first;
-    while(iterator->city != city1){
+    while(iterator && (iterator->city != city1)){
         iterator = iterator->next;
     }
-    while(iterator && iterator->city!=city2){
-        iterator = iterator->next;
-    }
-    return iterator;
+    return (iterator!=NULL) && (iterator->next) && iterator->next->city==city2;
 }
 
 bool removeRoad(Map *map, const char *city1, const char *city2){
@@ -395,26 +393,32 @@ bool removeRoad(Map *map, const char *city1, const char *city2){
     }
     City city1Pointer = getCity(map->cities, city1);
     City city2Pointer = getCity(map->cities, city2);
+    if(!city1Pointer || !city2Pointer){
+        return false;
+    }
     Connection exclude1 = getConnection(city1Pointer, city2Pointer);
     Connection exclude2 = getConnection(city2Pointer, city1Pointer);
+    if(!exclude1 || !exclude2){
+        return false;
+    }
     int toFix[NUMBER_OF_ROUTES];
     int numOfRoutes = 0;
-    for(int i = MIN_ROUTE_NUM; i <= MAX_ROUTE_NUM; i++){
-        if(belongsToRoute(city1Pointer, i) && belongsToRoute(city2Pointer, i)){
-            toFix[numOfRoutes]=i;
-            numOfRoutes++;
-        }
-    }
     CityList found[NUMBER_OF_ROUTES];
     int direction[NUMBER_OF_ROUTES];
-    for(int i = 0; i < numOfRoutes; i++){
-        if(areInOrder(map, city1Pointer, city2Pointer, toFix[i])){
-            found[i]=findPath(map, city1Pointer, city2Pointer, i, exclude1, exclude2);
-            direction[i] = 1;
-        }
-        else{
-            found[i]=findPath(map, city2Pointer, city1Pointer, i, exclude1, exclude2);
-            direction[i] = 2;
+    for(int i = MIN_ROUTE_NUM; i <= MAX_ROUTE_NUM; i++){
+        if(map->routes[i]){
+            if(areInOrder(map, city1Pointer, city2Pointer, i)){
+                toFix[numOfRoutes]=i;
+                direction[numOfRoutes]=1;
+                found[numOfRoutes]=findPath(map, city1Pointer, city2Pointer, i, exclude1, exclude2);
+                numOfRoutes++;
+            }
+            else if(areInOrder(map, city2Pointer, city1Pointer, i)){
+                toFix[numOfRoutes]=i;
+                direction[numOfRoutes]=1;
+                found[numOfRoutes]=findPath(map, city2Pointer, city1Pointer, i, exclude1, exclude2);
+                numOfRoutes++;
+            }
         }
     }
     for(int i = 0; i < numOfRoutes; i++){
@@ -444,11 +448,11 @@ bool removeRoad(Map *map, const char *city1, const char *city2){
     }
     for(int i = 0; i < numOfRoutes; i++){
         if(direction[i] == 1){
-            CityList iterator = map->routes[i]->first;
-            while(iterator!=city1Pointer){
+            CityList iterator = map->routes[toFix[i]]->first;
+            while(iterator->city!=city1Pointer){
                 iterator=iterator->next;
             }
-            CityList temp = iterator->next;
+            CityList temp =iterator->next;
             iterator->next = found[i];
             while(iterator->next!=NULL){
                 iterator = iterator->next;
@@ -456,8 +460,8 @@ bool removeRoad(Map *map, const char *city1, const char *city2){
             iterator->next = temp;
         }
         if(direction[i] == 2){
-            CityList iterator = map->routes[i]->first;
-            while(iterator!=city2Pointer){
+            CityList iterator = map->routes[toFix[i]]->first;
+            while(iterator->city!=city2Pointer){
                 iterator=iterator->next;
             }
             CityList temp = iterator->next;

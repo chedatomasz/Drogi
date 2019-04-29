@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
+#include <limits.h>
 #include "map.h"
 #include "route.h"
 #include "hashmap.h"
@@ -78,6 +79,21 @@ void addCityToList(Map* map, CityList list){
     insert->next = list;
 }
 
+bool addRouteToCities(CityList first, int routeId){
+        CityList iterator = first;
+        while(iterator != NULL){
+            if(!addToRoute(iterator->city, routeId)){
+                CityList iterator2 = first;
+                while(iterator2!=iterator){
+                    removeFromRoute(iterator2->city, routeId);
+                    iterator2=iterator2->next;
+                }
+                return false;
+            }
+            iterator = iterator->next;
+        }
+        return true;
+}
 bool addRoad(Map *map, const char *city1, const char *city2, unsigned length, int builtYear){
     if(!map || !city1 || !city2){
         return false;
@@ -85,54 +101,68 @@ bool addRoad(Map *map, const char *city1, const char *city2, unsigned length, in
     if(!verifyCityName(city1) || !verifyCityName(city2) || builtYear == 0 || strcmp(city1, city2)==0){
         return false;
     }
-    char* ourCity1 = malloc(sizeof(char)*(strlen(city1)+1));
-    if(!ourCity1){
-        return false;
-    }
-    char* ourCity2 = malloc(sizeof(char)*(strlen(city2)+1));
-    if(!ourCity2){
-        free(ourCity1);
-        return false;
-    }
-    strcpy(ourCity1, city1);
-    strcpy(ourCity2, city2);
     CityList list1 = NULL;
     CityList list2 = NULL;
     bool firstCityAdded = false;
     bool secondCityAdded = false;
-    City city1Pointer = getCity(map->cities, ourCity1);
+    City city1Pointer = getCity(map->cities, city1);
     if(!city1Pointer){
+        char* ourCity1 = malloc(sizeof(char)*(strlen(city1)+1));
+        if(!ourCity1){
+            return false;
+        }
+        strcpy(ourCity1, city1);
         list1 = malloc(sizeof(struct CityList));
         if(!list1){
+            free(ourCity1);
             return false;
         }
         city1Pointer = newCity(ourCity1);
         if(!city1Pointer){
+            free(list1);
+            free(ourCity1);
             return false;
         }
         if (!addCity(map->cities, city1Pointer)){
             freeCity(city1Pointer);
+            free(list1);
             return false;
         }
         firstCityAdded = true;
     }
-    City city2Pointer = getCity(map->cities, ourCity2);
+    City city2Pointer = getCity(map->cities, city2);
     if(!city2Pointer){
+        char* ourCity2 = malloc(sizeof(char)*(strlen(city2)+1));
+        if(!ourCity2){
+            if(firstCityAdded){
+                removeCity(map->cities, city1);
+                free(list1);
+            }
+            return false;
+        }
+        strcpy(ourCity2, city2);
         list2 = malloc(sizeof(struct CityList));
         if(!list2){
+            free(ourCity2);
+            if(firstCityAdded){
+                removeCity(map->cities, city1);
+                free(list1);
+            }
             return false;
         }
         city2Pointer = newCity(ourCity2);
         if(!city2Pointer){
             if(firstCityAdded){
-                removeCity(map->cities, ourCity1);
+                removeCity(map->cities, city1);
+                free(ourCity2);
+                free(list2);
                 free(list1);
             }
             return false;
         }
         if(!addCity(map->cities, city2Pointer)){
             if(firstCityAdded){
-                removeCity(map->cities, ourCity1);
+                removeCity(map->cities, city1);
                 freeCity(city2Pointer);
                 free(list1);
                 free(list2);
@@ -219,9 +249,14 @@ bool newRoute(Map *map, unsigned routeId, const char *city1, const char *city2){
     if(!(map->routes[routeId])){
         return false;
     }
-    map->routes[routeId]->first=findPath(map, city1Pointer, city2Pointer, EXAMPLE_INVALID_ROUTE, NULL);
+    map->routes[routeId]->first=findPath(map, city1Pointer, city2Pointer, EXAMPLE_INVALID_ROUTE, NULL, NULL);
     if(map->routes[routeId]->first){
-        return true;
+        if( addRouteToCities(map->routes[routeId]->first, routeId)){
+            return true;
+        }
+        else {
+            freeCityList(map->routes[routeId]->first);
+        }
     }
     else{
         free(map->routes[routeId]);
@@ -231,10 +266,130 @@ bool newRoute(Map *map, unsigned routeId, const char *city1, const char *city2){
 }
 
 bool extendRoute(Map *map, unsigned routeId, const char *city){
+    if(!map || !city || routeId <MIN_ROUTE_NUM || routeId >MAX_ROUTE_NUM || !verifyCityName(city)){
+        return false;
+    }
+    if(!map->routes[routeId]){
+        return false;
+    }
+    City cityPointer = getCity(map->cities, city);
+    if(!cityPointer){
+        return false;
+    }
+    if(belongsToRoute(cityPointer, routeId)){
+        return false;
+    }
+    City firstCity = map->routes[routeId]->first->city;
+    CityList lastCityList =  map->routes[routeId]->first;
+    while(lastCityList->next){
+        lastCityList=lastCityList->next;
+    }
+    City lastCity = lastCityList->city;
+    CityList fromLastCity = findPath(map, lastCity, cityPointer, routeId, NULL, NULL);
+    CityList toFirstCity = findPath(map, cityPointer, firstCity, routeId, NULL, NULL);
+    if(!fromLastCity && !toFirstCity){
+        return false;
+    }
+    if(!toFirstCity){
+        CityList proper = fromLastCity->next;
+        free(fromLastCity);
+        if(addRouteToCities(proper, routeId)){
+            lastCityList->next=proper;
+            return true;
+        }
+        freeCityList(proper);
+        return false;
+    }
+    if(!fromLastCity){
+        CityList iterator = toFirstCity;
+        while(iterator->next->next){
+            iterator = iterator->next;
+        }
+        free(iterator->next);
+        if(addRouteToCities(toFirstCity, routeId)){
+            iterator->next = map->routes[routeId]->first;
+            map->routes[routeId]->first = toFirstCity;
+            return true;
+        }
+        freeCityList(toFirstCity);
+        return false;
+    }
+    long dist1 = 0;
+    int oldest1 = INT_MAX;
+    CityList iterator = fromLastCity;
+    while(iterator->next){
+        Connection temp = getConnection(iterator->city, iterator->next->city);
+        dist1+=temp->length;
+        if(temp->year < oldest1){
+            oldest1=temp->year;
+        }
+        iterator=iterator->next;
+    }
+    long dist2 = 0;
+    int oldest2 = INT_MAX;
+    iterator = toFirstCity;
+    while(iterator->next){
+        Connection temp = getConnection(iterator->city, iterator->next->city);
+        dist2+=temp->length;
+        if(temp->year < oldest2){
+            oldest2=temp->year;
+        }
+        iterator=iterator->next;
+    }
+    if(dist1 < dist2 || (dist1==dist2 && oldest1 > oldest2)){
+        freeCityList(toFirstCity);
+        CityList proper = fromLastCity->next;
+        free(fromLastCity);
+        if(addRouteToCities(proper, routeId)){
+            lastCityList->next=proper;
+            return true;
+        }
+        freeCityList(proper);
+        return false;
+    }
+    if(dist1 > dist2 || (dist1==dist2 && oldest2 > oldest1)){
+        freeCityList(fromLastCity);
+        iterator = toFirstCity;
+        while(iterator->next->next){
+            iterator = iterator->next;
+        }
+        free(iterator->next);
+        if(addRouteToCities(toFirstCity, routeId)){
+            iterator->next = map->routes[routeId]->first;
+            map->routes[routeId]->first = toFirstCity;
+            return true;
+        }
+        freeCityList(toFirstCity);
+        return false;
+    }
+    freeCityList(fromLastCity);
+    freeCityList(toFirstCity);
+    return false;
 
 }
 
 bool removeRoad(Map *map, const char *city1, const char *city2){
+    if(!map || !city1 || !city2){
+        return false;
+    }
+    if(!verifyCityName(city1) || !verifyCityName(city2) || strcmp(city1, city2)==0){
+        return false;
+    }
+    City city1Pointer = getCity(map->cities, city1);
+    City city2Pointer = getCity(map->cities, city2);
+    Connection exclude1 = getConnection(city1Pointer, city2Pointer);
+    Connection exclude2 = getConnection(city2Pointer, city1Pointer);
+    int toFix[NUMBER_OF_ROUTES];
+    int numOfRoutes = 0;
+    for(int i = MIN_ROUTE_NUM; i <= MAX_ROUTE_NUM; i++){
+        if(belongsToRoute(city1Pointer, i) && belongsToRoute(city2Pointer, i)){
+            toFix[numOfRoutes]=i;
+            numOfRoutes++;
+        }
+    }
+
+
+
 
 }
 

@@ -8,12 +8,12 @@
 void freeCity(City city){
     freeConnectionTree(city->root);
     free(city->name);
-    free(city);
     while(city->routes){
         RouteNumber temp = city->routes->next;
         free(city->routes);
         city->routes = temp;
     }
+    free(city);
 }
 City newCity(char* name){
     City result = malloc(sizeof(struct City));
@@ -62,4 +62,26 @@ bool addToRoute(City city, int route){
     }
     insertion->next = new;
     return true;
+}
+
+void removeFromRoute(City city, int route){
+    if(!city){
+        return;
+    }
+    if(!belongsToRoute(city, route)){
+        return;
+    }
+    if(city->routes->number==route){
+        RouteNumber temp = city->routes;
+        city->routes = temp->next;
+        free(temp);
+        return;
+    }
+    RouteNumber insertion = city->routes;
+    while(insertion->next->number !=route){
+        insertion = insertion->next;
+    }
+    RouteNumber temp = insertion->next;
+    insertion->next = temp->next;
+    free(temp);
 }

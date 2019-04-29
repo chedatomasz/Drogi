@@ -40,4 +40,5 @@ bool belongsToRoute(City city, int route);
 
 bool addToRoute(City city, int route);
 
+void removeFromRoute(City city, int route);
 #endif //DROGI_CITY_H

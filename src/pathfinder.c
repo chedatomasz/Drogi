@@ -7,7 +7,7 @@
 #include "pathfinder.h"
 #include "priority_queue.h"
 
-CityList findPath(Map* map, City start, City end, int routeToExclude, Connection connectionToExclude){
+CityList findPath(Map* map, City start, City end, int routeToExclude, Connection connectionToExclude, Connection connectionToExclude2){
     PriorityQueue queue = newQueue();
     if(!queue){
         return NULL;
@@ -92,12 +92,12 @@ CityList findPath(Map* map, City start, City end, int routeToExclude, Connection
         if(!sure[current->number]){//Unsure cities are not a valid entry point for other nodes
             continue;
         }
-        if(belongsToRoute(current, routeToExclude)){
+        if(belongsToRoute(current, routeToExclude) && current!=start){
             continue;
         }
         Connection* neighbors = getAllConnections(current);
         for(int i = 0; i < current->numOfConnections; i++){
-            if(neighbors[i]==connectionToExclude){
+            if(neighbors[i]==connectionToExclude || neighbors[i]==connectionToExclude2){
                 continue;
             }
             int secondCityNum = neighbors[i]->city2->number;
@@ -126,6 +126,7 @@ CityList findPath(Map* map, City start, City end, int routeToExclude, Connection
                 }
             }
         }
+        free(neighbors);
     }
     if(!sure[end->number]){
         removePriorityQueue(queue);
@@ -174,7 +175,6 @@ CityList findPath(Map* map, City start, City end, int routeToExclude, Connection
         }
         position = previous[position];
     }
-    removePriorityQueue(queue);
     free(cities);
     free(distance);
     free(year);

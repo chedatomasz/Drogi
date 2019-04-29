@@ -50,6 +50,7 @@ void deleteCitiesHashmap(Hashmap hashmap){
             hashmap->buckets[i] = backup;
         }
     }
+    free(hashmap->buckets);
     free(hashmap);
 }
 

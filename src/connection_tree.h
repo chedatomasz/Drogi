@@ -21,6 +21,9 @@ bool addConnection(City city1, City city2, int length, int builtYear);
 
 Connection getConnection(City city1, City city2);
 
+//returns null if mem cant be allocd for result
+Connection* getAllConnections(City city1);
+
 void freeConnectionTree(ConnectionTree node);
 
 #endif //DROGI_CONNECTION_BST_H

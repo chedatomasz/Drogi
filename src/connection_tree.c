@@ -11,6 +11,7 @@
 #define KEY_LENGTH 32
 
 struct ConnectionTree {
+    int numOfConnections;
     Connection content;
     ConnectionTree left;
     ConnectionTree right;
@@ -62,17 +63,19 @@ bool addConnection(City city1, City city2, int length, int builtYear){
     ConnectionTree* insertion2 = findInsertion(&(city2->root), tree2);
     *insertion1 = tree1;
     *insertion2 = tree2;
+    city1->numOfConnections++;
+    city2->numOfConnections++;
     return true;
 }
 
 Connection getConnection(City city1, City city2){
     ConnectionTree start = city1->root;
     while(start!= NULL){
-        int comparation = compareNodes2(start, city2, hash(city2->name, KEY_LENGTH));
-        if(comparation<0){
+        int comparison = compareNodes2(start, city2, hash(city2->name, KEY_LENGTH));
+        if(comparison<0){
             start = start->left;
         }
-        else if(comparation > 0){
+        else if(comparison > 0){
             start = start->right;
         }
         else{
@@ -80,6 +83,25 @@ Connection getConnection(City city1, City city2){
         }
     }
     return NULL;
+}
+
+static void recursiveGetConnections(ConnectionTree city1, Connection* allConnections, int* counter){
+    if(!city1){
+        return;
+    }
+    allConnections[*counter]=city1->content;
+    (*counter)++;
+    recursiveGetConnections(city1->left, allConnections, counter);
+    recursiveGetConnections(city1->right, allConnections, counter);
+}
+
+Connection* getAllConnections(City city1){
+    Connection* allConnections = malloc(sizeof(Connection)*city1->numOfConnections);
+    if(!allConnections){
+        return NULL;
+    }
+    int counter = 0;
+    recursiveGetConnections(city1->root, allConnections, &counter);
 }
 
 void freeConnectionTree(ConnectionTree node){

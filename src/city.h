@@ -6,14 +6,19 @@
 #define DROGI_CITY_H
 
 
+#include <stdbool.h>
+
 /**
  * Struktura przechowująca miasto i jego połączenia.
  */
 typedef struct City* City;
+typedef struct RouteNumber* RouteNumber; //Forward declaration to avoid circular inclusion with route.h
 
 struct City {
-    const char* name;
+    char* name;
     struct ConnectionTree* root;
+    int numOfConnections;
+    RouteNumber routes;
 };
 
 /** @brief Usuwa strukturę.
@@ -29,5 +34,9 @@ void freeCity(City city);
  * zaalokować pamięci.
  */
 City newCity(const char* name);
+
+bool belongsToRoute(City city, int route);
+
+bool addToRoute(City city, int route);
 
 #endif //DROGI_CITY_H

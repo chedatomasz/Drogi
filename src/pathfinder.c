@@ -106,7 +106,6 @@ CityList findPath(Map* map, City start, City end, int routeToExclude, Connection
             if(newYear>neighbors[i]->year){
                 newYear=neighbors[i]->year;
             }
-            if(neighbors[i])
             if(newDistance < distance[secondCityNum]){//If path is shorter:
                 distance[secondCityNum]=newDistance;
                 insertPriorityQueue(queue, neighbors[i]->city2, newDistance);

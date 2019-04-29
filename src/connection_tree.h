@@ -26,4 +26,6 @@ Connection* getAllConnections(City city1);
 
 void freeConnectionTree(ConnectionTree node);
 
+void removeConnection(City city1, City city2);
+
 #endif //DROGI_CONNECTION_BST_H

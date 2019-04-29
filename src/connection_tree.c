@@ -11,7 +11,6 @@
 #define KEY_LENGTH 32
 
 struct ConnectionTree {
-    int numOfConnections;
     Connection content;
     ConnectionTree left;
     ConnectionTree right;
@@ -145,4 +144,49 @@ static int compareNodes2(ConnectionTree t1, City t2, uint32_t key){
         return 1;
     }
     return strcmp(t2->name, t1->content->city2->name);
+}
+void removeNode(ConnectionTree* target){
+    if(!(*target)->left && !(*target)->right){
+        free((*target)->content);
+        free(*target);
+        *target=NULL;
+        return;
+    }
+    if(!(*target)->left){
+        ConnectionTree temp = (*target)->right;
+        free((*target)->content);
+        free(*target);
+        *target=temp;
+        return;
+    }
+    if(!(*target)->right){
+        ConnectionTree temp = (*target)->left;
+        free((*target)->content);
+        free(*target);
+        *target=temp;
+        return;
+    }
+    ConnectionTree* minRightSubTree = &((*target)->right);
+    while((*minRightSubTree)->left){
+        minRightSubTree = &((*minRightSubTree) ->left);
+    }
+    free((*target)->content);
+    (*target)->content=(*minRightSubTree)->content;
+    (*target)->key=(*minRightSubTree)->key;
+    removeNode(minRightSubTree);
+}
+void removeConnection(City city1, City city2){
+    ConnectionTree* start = &(city1->root);
+    while(start!= NULL){
+        int comparison = compareNodes2(*start, city2, hash(city2->name, KEY_LENGTH));
+        if(comparison<0){
+            start = &((*start)->left);
+        }
+        else if(comparison > 0){
+            start = &((*start)->right);
+        }
+        else{
+            removeNode(start);
+        }
+    }
 }

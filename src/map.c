@@ -94,6 +94,13 @@ bool addRouteToCities(CityList first, int routeId){
         }
         return true;
 }
+void removeRouteFromCities(CityList first, int routeId){
+    CityList iterator = first;
+    while(iterator != NULL){
+        removeFromRoute(iterator->city, routeId);
+        iterator = iterator->next;
+    }
+}
 bool addRoad(Map *map, const char *city1, const char *city2, unsigned length, int builtYear){
     if(!map || !city1 || !city2){
         return false;
@@ -368,6 +375,17 @@ bool extendRoute(Map *map, unsigned routeId, const char *city){
 
 }
 
+bool areInOrder(Map *map, City city1, City city2, int route){
+    CityList iterator = map->routes[route]->first;
+    while(iterator->city != city1){
+        iterator = iterator->next;
+    }
+    while(iterator && iterator->city!=city2){
+        iterator = iterator->next;
+    }
+    return iterator;
+}
+
 bool removeRoad(Map *map, const char *city1, const char *city2){
     if(!map || !city1 || !city2){
         return false;
@@ -387,10 +405,72 @@ bool removeRoad(Map *map, const char *city1, const char *city2){
             numOfRoutes++;
         }
     }
-
-
-
-
+    CityList found[NUMBER_OF_ROUTES];
+    int direction[NUMBER_OF_ROUTES];
+    for(int i = 0; i < numOfRoutes; i++){
+        if(areInOrder(map, city1Pointer, city2Pointer, toFix[i])){
+            found[i]=findPath(map, city1Pointer, city2Pointer, i, exclude1, exclude2);
+            direction[i] = 1;
+        }
+        else{
+            found[i]=findPath(map, city2Pointer, city1Pointer, i, exclude1, exclude2);
+            direction[i] = 2;
+        }
+    }
+    for(int i = 0; i < numOfRoutes; i++){
+        if(!found[i]){
+            for(int j = 0; j < numOfRoutes; j++){
+                freeCityList(found[i]);
+            }
+            return false;
+        }
+        CityList temp = found[i];
+        found[i]=found[i]->next;
+        free(temp);
+        temp = found[i];
+        while(temp->next->next){
+            temp = temp->next;
+        }
+        free(temp->next);
+        temp->next=NULL;
+    }
+    for(int i = 0; i < numOfRoutes; i++){
+        if(!addRouteToCities(found[i], toFix[i])){
+            for(int j = 0; j < i; j++){
+                removeRouteFromCities(found[j], toFix[j]);
+            }
+            return false;
+        }
+    }
+    for(int i = 0; i < numOfRoutes; i++){
+        if(direction[i] == 1){
+            CityList iterator = map->routes[i]->first;
+            while(iterator!=city1Pointer){
+                iterator=iterator->next;
+            }
+            CityList temp = iterator->next;
+            iterator->next = found[i];
+            while(iterator->next!=NULL){
+                iterator = iterator->next;
+            }
+            iterator->next = temp;
+        }
+        if(direction[i] == 2){
+            CityList iterator = map->routes[i]->first;
+            while(iterator!=city2Pointer){
+                iterator=iterator->next;
+            }
+            CityList temp = iterator->next;
+            iterator->next = found[i];
+            while(iterator->next!=NULL){
+                iterator = iterator->next;
+            }
+            iterator->next = temp;
+        }
+    }
+    removeConnection(city1Pointer, city2Pointer);
+    removeConnection(city2Pointer, city1Pointer);
+    return true;
 }
 
 char const* getRouteDescription(Map *map, unsigned routeId){

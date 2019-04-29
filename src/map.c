@@ -25,7 +25,12 @@ struct Map {
     Route routes[NUMBER_OF_ROUTES];
     Hashmap cities;
     CityList allCities;
+    int numOfCities;
 };
+
+CityList getCityList(Map* map){
+    return map->allCities;
+}
 
 Map* newMap(void){
     Map* result = malloc(sizeof(struct Map));
@@ -41,6 +46,7 @@ Map* newMap(void){
         return NULL;
     }
     result->allCities = NULL;
+    result->numOfCities = 0;
     return result;
 }
 
@@ -150,11 +156,15 @@ bool addRoad(Map *map, const char *city1, const char *city2, unsigned length, in
         list1->city = city1Pointer;
         list1->next = NULL;
         addCityToList(map, list1);
+        city1Pointer->number=map->numOfCities;
+        map->numOfCities++;
     }
     if(secondCityAdded){
         list2->city = city2Pointer;
         list2->next = NULL;
         addCityToList(map, list2);
+        city2Pointer->number=map->numOfCities;
+        map->numOfCities++;
     }
     return true;
 }
@@ -202,9 +212,17 @@ bool newRoute(Map *map, unsigned routeId, const char *city1, const char *city2){
     if(map->routes[routeId]){
         return false;
     }
-    map->routes[routeId]=findPath(city1Pointer, city2Pointer, EXAMPLE_INVALID_ROUTE, NULL);
-    if(map->routes[routeId]){
+    map->routes[routeId]=malloc(sizeof(struct Route));
+    if(!(map->routes[routeId])){
+        return false;
+    }
+    map->routes[routeId]->first=findPath(map, city1Pointer, city2Pointer, EXAMPLE_INVALID_ROUTE, NULL);
+    if(map->routes[routeId]->first){
         return true;
+    }
+    else{
+        free(map->routes[routeId]);
+        map->routes[routeId]=NULL;
     }
     return false;
 }
@@ -223,7 +241,7 @@ char const* getRouteDescription(Map *map, unsigned routeId){
     }
     Route ourRoute = map->routes[routeId];
     char* result;
-    if(!ourRoute){
+    if(!ourRoute){//empty string
         result = malloc(sizeof(char));
         if(!result){
             return NULL;
@@ -231,7 +249,7 @@ char const* getRouteDescription(Map *map, unsigned routeId){
         *result = '\0';
         return result;
     }
-
+    int length = 0;
 }
 
 static bool verifyCityName(const char *city1){

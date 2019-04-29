@@ -7,17 +7,18 @@
 
 
 #include <stdbool.h>
+#include "route.h"
 
 /**
  * Struktura przechowująca miasto i jego połączenia.
  */
 typedef struct City* City;
-typedef struct RouteNumber* RouteNumber; //Forward declaration to avoid circular inclusion with route.h
 
 struct City {
     char* name;
     struct ConnectionTree* root;
     int numOfConnections;
+    int number;
     RouteNumber routes;
 };
 
@@ -33,7 +34,7 @@ void freeCity(City city);
  * @return Wskaźnik na utworzoną strukturę lub NULL, gdy nie udało się
  * zaalokować pamięci.
  */
-City newCity(const char* name);
+City newCity(char* name);
 
 bool belongsToRoute(City city, int route);
 

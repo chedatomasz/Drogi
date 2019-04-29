@@ -102,6 +102,7 @@ Connection* getAllConnections(City city1){
     }
     int counter = 0;
     recursiveGetConnections(city1->root, allConnections, &counter);
+    return allConnections;
 }
 
 void freeConnectionTree(ConnectionTree node){

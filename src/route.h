@@ -5,14 +5,13 @@
 #ifndef DROGI_ROUTE_H
 #define DROGI_ROUTE_H
 
-#include "city.h"
-
 /**
  * Struktura przechowująca informacje o pojedynczej drodze krajowej.
  */
 typedef struct Route* Route;
 typedef struct RouteNumber* RouteNumber;
 typedef struct CityList* CityList;
+typedef struct City* City;
 struct RouteNumber{
     int number;
     RouteNumber next;
@@ -25,17 +24,7 @@ struct Route{
     CityList first;
 };
 
-void freeCityList(CityList list) {
-    while(list){
-        CityList temp = list->next;
-        free(list);
-        list = temp;
-    }
-}
+void freeCityList(CityList list);
 
-void freeRoute(Route route) {
-    if(route){
-        freeCityList(route->first);
-    }
-}
+void freeRoute(Route route);
 #endif //DROGI_ROUTE_H

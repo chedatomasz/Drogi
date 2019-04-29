@@ -15,7 +15,7 @@ void freeCity(City city){
         city->routes = temp;
     }
 }
-City newCity(const char* name){
+City newCity(char* name){
     City result = malloc(sizeof(struct City));
     if(!result){
         return NULL;
@@ -24,6 +24,7 @@ City newCity(const char* name){
     result->root = NULL;
     result->numOfConnections = 0;
     result->routes = NULL;
+    result->number = 0;
     return result;
 }
 

@@ -13,10 +13,11 @@ bool isEmpty(PriorityQueue queue);
 
 PriorityQueue newQueue();
 
-City popMin(PriorityQueue queue);
+void* popMin(PriorityQueue queue);
 
-void decreasePriority(PriorityQueue queue, int position, int val);
+bool insertPriorityQueue(PriorityQueue queue, void* obj, int key);
 
-bool insertPriorityQueue(PriorityQueue queue, City city, int key);
+void removePriorityQueue(PriorityQueue queue);
 
+int getPriotityQueueSize(PriorityQueue queue);
 #endif //DROGI_PRIORITY_QUEUE_H

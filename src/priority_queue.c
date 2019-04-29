@@ -5,7 +5,7 @@
 
 struct PriorityQueue{
     int* heap;
-    City* cityHeap;
+    void** objHeap;
     int size;
     int allocatedSize;
 };
@@ -22,8 +22,8 @@ static void swap(int* first, int* second){
     *first = *second;
     *second = buff;
 }
-static void citySwap(City* first, City* second){
-    City buff = *first;
+static void objSwap(void* *first, void* *second){
+    void* buff = *first;
     *first = *second;
     *second = buff;
 }
@@ -38,8 +38,8 @@ PriorityQueue newQueue(){
         free(result);
         return NULL;
     }
-    result->cityHeap = malloc(sizeof(City)*FIRST_ALLOC_SIZE);
-    if(!result->cityHeap){
+    result->objHeap = malloc(sizeof(void*)*FIRST_ALLOC_SIZE);
+    if(!result->objHeap){
         free(result->heap);
         free(result);
     }
@@ -64,64 +64,65 @@ static void MinHeapify(PriorityQueue queue, int position){
     }
     if(min != position){
         swap(&(queue->heap[position]), &(queue->heap[min]));
-        citySwap(&(queue->cityHeap[position]), &(queue->cityHeap[position]));
+        objSwap(&(queue->objHeap[position]), &(queue->objHeap[position]));
         MinHeapify(queue, min);
     }
 }
 
-City popMin(PriorityQueue queue){
+void* popMin(PriorityQueue queue){
     if(isEmpty(queue)){
         return NULL;
     }
     if(queue->size == 1){
-        City answer = queue->cityHeap[0];
+        void* answer = queue->objHeap[0];
         queue->size = 0;
         return answer;
     }
-    City answer = queue->cityHeap[0];
+    void* answer = queue->objHeap[0];
     queue->heap[0]=queue->heap[queue->size-1];
-    queue->cityHeap[0]=queue->cityHeap[queue->size-1];
+    queue->objHeap[0]=queue->objHeap[queue->size-1];
     queue->size--;
     MinHeapify(queue, 0);
     return answer;
 }
 
-void decreasePriority(PriorityQueue  queue, int position, int val){
-    queue->heap[position] = val;
-    while (position != 0 && queue->heap[parent(position)] > queue->heap[position])
-    {
-        swap(&(queue->heap[position]), &(queue->heap[parent(position)]));
-        citySwap(&(queue->cityHeap[position]), &(queue->cityHeap[parent(position)]));
-        position = parent(position);
-    }
-}
 
-bool insertPriorityQueue(PriorityQueue queue, City city, int key){
+bool insertPriorityQueue(PriorityQueue queue, void* obj, int key){
     if (queue->size == queue->allocatedSize)
     {
         int* newHeap = realloc(queue->heap, sizeof(int)*(queue->allocatedSize)*2);
         if(!newHeap){
             return false;
         }
-        City* newCityHeap =realloc(queue->cityHeap, sizeof(City)*(queue->allocatedSize)*2);
-        if(!newCityHeap){
+        void** newObjHeap =realloc(queue->objHeap, sizeof(void*)*(queue->allocatedSize)*2);
+        if(!newObjHeap){
             free(newHeap);
             return false;
         }
         queue->heap=newHeap;
-        queue->cityHeap=newCityHeap;
+        queue->objHeap=newObjHeap;
         queue->allocatedSize*=2;
     }
     queue->size++;
     int position = queue->size - 1;
     queue->heap[position] = key;
-    queue->cityHeap[position] = city;
+    queue->objHeap[position] = obj;
 
     while (position != 0 && queue->heap[parent(position)] > queue->heap[position]) {
         swap(&(queue->heap[position]), &(queue->heap[parent(position)]));
-        citySwap(&(queue->cityHeap[position]), &(queue->cityHeap[parent(position)]));
+        objSwap(&(queue->objHeap[position]), &(queue->objHeap[parent(position)]));
         position = parent(position);
     }
+    return true;
+}
+
+void removePriorityQueue(PriorityQueue queue){
+    while(!isEmpty(queue)){
+        popMin(queue);
+    }
+    free(queue->heap);
+    free(queue->objHeap);
+    free(queue);
 }
 
 

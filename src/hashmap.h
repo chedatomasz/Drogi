@@ -1,7 +1,9 @@
-//
-// Created by chedat on 25.04.19.
-//
-
+/** @file
+ * Interfejs klasy przechowującej hashmapę City
+ *
+ * @author Tomasz Cheda <tomasz.cheda@students.mimuw.edu.pl>
+ * @date 29.04.2019
+ */
 #ifndef DROGI_HASHMAP_H
 #define DROGI_HASHMAP_H
 

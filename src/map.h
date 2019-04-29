@@ -137,7 +137,11 @@ bool removeRoad(Map *map, const char *city1, const char *city2);
  */
 char const* getRouteDescription(Map *map, unsigned routeId);
 
-typedef struct CityList* CityList;
+typedef struct CityList* CityList;///< Deklaracja aby uniknąć załączania w kółko.
 
+/** @brief umożliwia łatwy dostęp do listy wszystkich miast na mapie
+ * @param map  - przeszukiwana mapa.
+ * @return  - lista miast.
+ */
 CityList getCityList(Map *map);
 #endif /* __MAP_H__ */

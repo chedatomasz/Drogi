@@ -1,13 +1,20 @@
+/** @file
+ * Implementacja klasy oferującej kolejkę priorytetową void*
+ *
+ * @author Tomasz Cheda <tomasz.cheda@students.mimuw.edu.pl>
+ * @date 29.04.2019
+ */
+
 #include "priority_queue.h"
 #include <stdlib.h>
 
 #define FIRST_ALLOC_SIZE 4
 
 struct PriorityQueue{
-    int* heap;
-    void** objHeap;
-    int size;
-    int allocatedSize;
+    int* heap; ///<Tablica przechowująca klucze
+    void** objHeap;///<Tablica przechowująca elementy
+    int size; ///<Rzeczywisty rozmiar tablicy
+    int allocatedSize; ///<Zaalokowany rozmiar tablicy dynamicznej;
 };
 
 
@@ -117,9 +124,6 @@ bool insertPriorityQueue(PriorityQueue queue, void* obj, int key){
 }
 
 void removePriorityQueue(PriorityQueue queue){
-    while(!isEmpty(queue)){
-        popMin(queue);
-    }
     free(queue->heap);
     free(queue->objHeap);
     free(queue);

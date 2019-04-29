@@ -1,20 +1,23 @@
-//
-// Created by chedat on 25.04.19.
-//
-
+/** @file
+ * Implementacja klasy oferującej hashowane drzewo sąsiedztwa
+ *
+ * @author Tomasz Cheda <tomasz.cheda@students.mimuw.edu.pl>
+ * @date 29.04.2019
+ */
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include "connection_tree.h"
 #include "hashmap.h"
 
-#define KEY_LENGTH 32
+#define KEY_LENGTH 32 ///< Długość klucza używanego do hashowania
+
 
 struct ConnectionTree {
-    Connection content;
-    ConnectionTree left;
-    ConnectionTree right;
-    uint32_t key;
+    Connection content; ///< Wskaźnik na strukturę z informacją o połączeniu
+    ConnectionTree left; ///< Wskaźnik na lewego syna
+    ConnectionTree right; ///<Wskaźnik na prawego syna
+    uint32_t key; ///<Klucz węzła.
 };
 
 static int compareNodes(ConnectionTree t1, ConnectionTree t2);
@@ -146,7 +149,7 @@ static int compareNodes2(ConnectionTree t1, City t2, uint32_t key){
     return strcmp(t2->name, t1->content->city2->name);
 }
 void removeNode(ConnectionTree* target){
-    if(!((*target)->left) && !((*target)->right)){;
+    if(!((*target)->left) && !((*target)->right)){
         free((*target)->content);
         free(*target);
         *target=NULL;

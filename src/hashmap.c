@@ -1,22 +1,36 @@
+/** @file
+ * Implementacja klasy przechowującej hashmapę City
+ *
+ * @author Tomasz Cheda <tomasz.cheda@students.mimuw.edu.pl>
+ * @date 29.04.2019
+ */
 #include "hashmap.h"
 #include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdbool.h>
-//
-// Created by chedat on 25.04.19.
-//
+
+/**
+ * @brief Deklaracja typu przechowującego komórkę hashmapy - listę.
+ */
 typedef struct Bucket* Bucket;
 
+/**
+ * @brief Struktura przechowująca komórkę hashmapy - listę.
+ */
 struct Bucket{
-    void* content;
-    char* key;
-    struct Bucket* next;
+    void* content;///< Zawartość komórki
+    char* key; ///< Klucz komórki kompatybilny z zadeklarowanym rozmiarem klucza
+    struct Bucket* next;///< Wskaźnik na następny element listy
 };
 
+/**
+ * @brief Struktura przechowująca dowolny void* i jego klucz - String.
+   Ilość komórek jest potęgą 2 mniejszą od 2^32.
+ */
 struct Hashmap{
-    unsigned int keySizeInBits;
-    Bucket *buckets;
+    unsigned int keySizeInBits; ///< Rozmiar klucza w bitach.
+    Bucket *buckets; ///< Tablica komórek.
 };
 
 

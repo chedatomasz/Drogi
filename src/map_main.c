@@ -126,7 +126,7 @@ int main() {
                 if (i == 0 && buff[i] == '\n') break;
                 if (argc == 5) ERROR("Too many arguments");
                 argv[argc] = malloc(i - last + 1);
-                if (argv[argc] == NULL) ERROR("Memory error");
+                if (argv[argc] == NULL) ERROR("Memory error12");
                 memcpy(argv[argc], buff + last, i - last);
                 argv[argc++][i - last] = 0;
                 last = i + 1;
@@ -153,7 +153,7 @@ int main() {
         } else if (strcmp(argv[0], "getRouteDescription") == 0) {
             if (argc != 2) ERROR(NUM);
             const char* str = getRouteDescription(m, toUnsigned(argv[1]));
-            if (str == NULL) ERROR("Memory error");
+            if (str == NULL) ERROR("Memory error11");
             printf("%lu: %s\n", lineNr, str);
             free((void*) str);
             wypisac = false;

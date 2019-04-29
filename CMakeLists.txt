@@ -13,7 +13,7 @@ set_property(GLOBAL PROPERTY RULE_MESSAGES OFF)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # Ustawiamy wspólne opcje kompilowania dla wszystkich wariantów projektu.
-set(CMAKE_C_FLAGS "-std=c11 -Wall -Wextra")
+set(CMAKE_C_FLAGS "-std=c11 -Wall -Wextra -lm")
 # Domyślne opcje dla wariantów Release i Debug są sensowne.
 # Jeśli to konieczne, ustawiamy tu inne.
 # set(CMAKE_C_FLAGS_RELEASE "-O3 -DNDEBUG")
@@ -27,6 +27,7 @@ set(SOURCE_FILES
 
 # Wskazujemy plik wykonywalny.
 add_executable(map ${SOURCE_FILES})
+target_link_libraries(map m)
 
 # Dodajemy obsługę Doxygena: sprawdzamy, czy jest zainstalowany i jeśli tak to:
 find_package(Doxygen)

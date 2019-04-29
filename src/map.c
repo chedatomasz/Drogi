@@ -13,11 +13,14 @@
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
+#include <stdio.h>
 #include "map.h"
 #include "route.h"
 #include "hashmap.h"
 #include "connection_tree.h"
 #include "pathfinder.h"
+
 
 static bool verifyCityName(const char *city);
 
@@ -236,7 +239,7 @@ bool removeRoad(Map *map, const char *city1, const char *city2){
 }
 
 char const* getRouteDescription(Map *map, unsigned routeId){
-    if(!map || routeId < MIN_ROUTE_NUM || routeId > MIN_ROUTE_NUM){
+    if(!map || routeId < MIN_ROUTE_NUM || routeId > MAX_ROUTE_NUM){
         return false;
     }
     Route ourRoute = map->routes[routeId];
@@ -250,6 +253,45 @@ char const* getRouteDescription(Map *map, unsigned routeId){
         return result;
     }
     int length = 0;
+    length += floor(log10(routeId));
+    length++;
+    CityList iterator = ourRoute->first;
+    while(iterator->next){
+        length++;// ;
+        length+=strlen(iterator->city->name);
+        length++;// ;
+        Connection link = getConnection(iterator->city, iterator->next->city);
+        length += floor(log10(link->length));
+        length+=2;//last char + ;
+        if(link->year < 0){
+            length++; //minus sign
+        }
+        length += floor(log10(abs(link->year)));
+        length++; //last char
+        iterator = iterator->next;
+    }
+    length++; // ;
+    length+=strlen(iterator->city->name);
+    result = malloc(sizeof(char)*(length+1));
+    if(!result){
+        return NULL;
+    }
+    result[0]='\0';
+    iterator = ourRoute->first;
+    char intBuffer[14];
+    sprintf(intBuffer, "%d;", routeId);
+    strcat(result, intBuffer);
+    while(iterator->next){
+        strcat(result, iterator->city->name);
+        Connection link = getConnection(iterator->city, iterator->next->city);
+        sprintf(intBuffer, ";%d;", link->length);
+        strcat(result, intBuffer);
+        sprintf(intBuffer, "%d;", link->year);
+        strcat(result, intBuffer);
+        iterator=iterator->next;
+    }
+    strcat(result, iterator->city->name);
+    return result;
 }
 
 static bool verifyCityName(const char *city1){

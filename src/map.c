@@ -8,7 +8,7 @@
 #define HASHMAP_SIZE_BITS 20 ///< Rozmiar w bitach używanej hashmapy
 #define MIN_ROUTE_NUM 1 ///< Najniższy poprawny numer drogi krajowej
 #define MAX_ROUTE_NUM 999 ///< Najwyższy poprawny numer drogi krajowej
-#define EXAMPLE_INVALID_ROUTE -1 ///< Niepoprawny numer drogi krajowej - placeholder
+#define EXAMPLE_INVALID_ROUTE 9999 ///< Niepoprawny numer drogi krajowej - placeholder
 
 #include <stddef.h>
 #include <string.h>
@@ -83,7 +83,7 @@ static void addCityToList(Map* map, CityList list){
 }
 
 /** @brief Dopisuje w miastach z listy routeId do listy przechodzących przez nie dróg */
-static bool addRouteToCities(CityList first, int routeId){
+static bool addRouteToCities(CityList first, unsigned routeId){
         CityList iterator = first;
         while(iterator != NULL){
             if(!addToRoute(iterator->city, routeId)){
@@ -99,7 +99,7 @@ static bool addRouteToCities(CityList first, int routeId){
         return true;
 }
 /** @brief Usuwa w miastach z listy routeId z listy przechodzących przez nie dróg */
-static void removeRouteFromCities(CityList first, int routeId){
+static void removeRouteFromCities(CityList first, unsigned routeId){
     CityList iterator = first;
     while(iterator != NULL){
         removeFromRoute(iterator->city, routeId);
@@ -389,7 +389,7 @@ bool extendRoute(Map *map, unsigned routeId, const char *city){
  * @param route - analizowane route
  * @return true jeśli kolejność jest zachowana, false jeśli nie
  */
-static bool areInOrder(Map *map, City city1, City city2, int route){
+static bool areInOrder(Map *map, City city1, City city2, unsigned route){
     CityList iterator = map->routes[route]->first;
     while(iterator && (iterator->city != city1)){
         iterator = iterator->next;
@@ -414,11 +414,11 @@ bool removeRoad(Map *map, const char *city1, const char *city2){
     if(!exclude1 || !exclude2){
         return false;
     }
-    int toFix[NUMBER_OF_ROUTES];
+    unsigned toFix[NUMBER_OF_ROUTES];
     int numOfRoutes = 0;
     CityList found[NUMBER_OF_ROUTES];
     int direction[NUMBER_OF_ROUTES];
-    for(int i = MIN_ROUTE_NUM; i <= MAX_ROUTE_NUM; i++){
+    for(unsigned i = MIN_ROUTE_NUM; i <= MAX_ROUTE_NUM; i++){
         if(map->routes[i]){
             if(areInOrder(map, city1Pointer, city2Pointer, i)){
                 toFix[numOfRoutes]=i;
@@ -504,8 +504,8 @@ char const* getRouteDescription(Map *map, unsigned routeId){
         return result;
     }
     Route ourRoute = map->routes[routeId];
-    int length = 0;
-    length += floor(log10(routeId));
+    size_t length = 0;
+    length += (size_t) floor(log10(routeId));
     length++;
     CityList iterator = ourRoute->first;
     while(iterator->next){
@@ -513,12 +513,12 @@ char const* getRouteDescription(Map *map, unsigned routeId){
         length+=strlen(iterator->city->name);
         length++;// ;
         Connection link = getConnection(iterator->city, iterator->next->city);
-        length += floor(log10(link->length));
+        length += (size_t) floor(log10(link->length));
         length+=2;//last char + ;
         if(link->year < 0){
             length++; //minus sign
         }
-        length += floor(log10(abs(link->year)));
+        length += (size_t) floor(log10(abs(link->year)));
         length++; //last char
         iterator = iterator->next;
     }
@@ -548,9 +548,9 @@ char const* getRouteDescription(Map *map, unsigned routeId){
 
 /** @brief Funkcja weryfikująca, czy string spełnia warunki nazwy miasta*/
 static bool verifyCityName(const char *city1){
-    int length = strlen(city1);
+    size_t length = strlen(city1);
     bool valid = true;
-    for(int i = 0; i < length; i++){
+    for(size_t i = 0; i < length; i++){
         if((city1[i]>=0 && city1[i]<32 )|| city1[i]==59){
             valid = false;
             break;

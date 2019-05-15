@@ -24,6 +24,6 @@
  * reprezentujący połączenie, którego nie należy używać przy wyszukiwaniu.
 * @return Wskaźnik na struct CityList lub NULL, gdy nie znaleziono jednoznacznej ścieżki.
 */
-CityList findPath(Map* map, City start, City end, int routeToExclude, Connection connectionToExclude, Connection connectionToExclude2);
+CityList findPath(Map* map, City start, City end, unsigned routeToExclude, Connection connectionToExclude, Connection connectionToExclude2);
 
 #endif //DROGI_PATHFINDER_H

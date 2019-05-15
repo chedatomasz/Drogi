@@ -46,7 +46,7 @@ void* popMin(PriorityQueue queue);
  * @return True w przypadku powodzenia lub false,
  * gdy nie udało się zaalokować pamięci.
  */
-bool insertPriorityQueue(PriorityQueue queue, void* obj, int key);
+bool insertPriorityQueue(PriorityQueue queue, void* obj, unsigned key);
 
 /** @brief Usuwa kolejkę priotytetową.
  * Wyrzuca pozostałe elementy i zwalnia pamięć.

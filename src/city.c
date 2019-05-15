@@ -28,7 +28,7 @@ City newCity(char* name){
     return result;
 }
 
-bool belongsToRoute(City city, int route){
+bool belongsToRoute(City city, unsigned route){
     if(!city){
         return false;
     }
@@ -39,7 +39,7 @@ bool belongsToRoute(City city, int route){
     return (number!=NULL);
 }
 
-bool addToRoute(City city, int route){
+bool addToRoute(City city, unsigned route){
     if(!city){
         return false;
     }
@@ -64,7 +64,7 @@ bool addToRoute(City city, int route){
     return true;
 }
 
-void removeFromRoute(City city, int route){
+void removeFromRoute(City city, unsigned route){
     if(!city){
         return;
     }

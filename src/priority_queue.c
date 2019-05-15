@@ -8,27 +8,40 @@
 #include "priority_queue.h"
 #include <stdlib.h>
 
-#define FIRST_ALLOC_SIZE 4
+#define FIRST_ALLOC_SIZE 4///<Liczba początkowo aloowanych elementów
 
+/**
+ * Implementacja struktury przechowującej kolejkę priorytetową.
+ */
 struct PriorityQueue{
-    int* heap; ///<Tablica przechowująca klucze
+    unsigned* heap; ///<Tablica przechowująca klucze
     void** objHeap;///<Tablica przechowująca elementy
-    int size; ///<Rzeczywisty rozmiar tablicy
-    int allocatedSize; ///<Zaalokowany rozmiar tablicy dynamicznej;
+    size_t size; ///<Rzeczywisty rozmiar tablicy
+    size_t allocatedSize; ///<Zaalokowany rozmiar tablicy dynamicznej;
 };
 
 
-static int parent(int i) { return (i-1)/2; }
+static size_t parent(size_t i) { return (i-1)/2; }///<Pozycja rodzica danego elementu w tablicy
 
-static int left(int i) { return (2*i + 1); }
+static size_t left(size_t i) { return (2*i + 1); }///<Pozycja lewego dziecka danego elementu w tablicy
 
-static int right(int i) { return (2*i + 2); }
+static size_t right(size_t i) { return (2*i + 2); }///<Pozycja prawego dziecka danego elementu w tablicy
 
-static void swap(int* first, int* second){
-    int buff = *first;
+/**
+ * @brief Zamienia zawartości dwóch zmiennych typu unsigned
+ * @param first Wskaźnik na jedną zmienną
+ * @param second Wskaźnik na drugą zmienną
+ */
+static void swap(unsigned* first, unsigned* second){
+    unsigned buff = *first;
     *first = *second;
     *second = buff;
 }
+/**
+ * @brief Zamienia miejscami dwa wskaźniki
+ * @param first pierwszy wskaźnik
+ * @param second drugi wskaźnik
+ */
 static void objSwap(void* *first, void* *second){
     void* buff = *first;
     *first = *second;
@@ -40,7 +53,7 @@ PriorityQueue newQueue(){
     if(!result){
         return NULL;
     }
-    result->heap = malloc(sizeof(int)*FIRST_ALLOC_SIZE);
+    result->heap = malloc(sizeof(unsigned)*FIRST_ALLOC_SIZE);
     if(!result->heap){
         free(result);
         return NULL;
@@ -59,10 +72,15 @@ bool isEmpty(PriorityQueue queue){
     return (queue->size == 0);
 }
 
-static void MinHeapify(PriorityQueue queue, int position){
-    int l = left(position);
-    int r = right(position);
-    int min = position;
+/**
+ * @brief Przywraca własność kopca zaczynając od wskazanej pozycji
+ * @param queue Kolejka na której wykonujemy operację
+ * @param position Pozycja od której zaczynamy
+ */
+static void MinHeapify(PriorityQueue queue, size_t position){
+    size_t l = left(position);
+    size_t r = right(position);
+    size_t min = position;
     if(l<queue->size && queue->heap[l]<queue->heap[min]){
         min = l;
     }
@@ -94,10 +112,10 @@ void* popMin(PriorityQueue queue){
 }
 
 
-bool insertPriorityQueue(PriorityQueue queue, void* obj, int key){
+bool insertPriorityQueue(PriorityQueue queue, void* obj, unsigned key){
     if (queue->size == queue->allocatedSize)
     {
-        int* newHeap = realloc(queue->heap, sizeof(int)*(queue->allocatedSize)*2);
+        unsigned* newHeap = realloc(queue->heap, sizeof(unsigned)*(queue->allocatedSize)*2);
         if(!newHeap){
             return false;
         }
@@ -111,7 +129,7 @@ bool insertPriorityQueue(PriorityQueue queue, void* obj, int key){
         queue->allocatedSize*=2;
     }
     queue->size++;
-    int position = queue->size - 1;
+    size_t position = queue->size - 1;
     queue->heap[position] = key;
     queue->objHeap[position] = obj;
 

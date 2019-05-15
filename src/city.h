@@ -16,6 +16,9 @@
  */
 typedef struct City* City;
 
+/**
+ * Implementacja struktury przechowującej miasto i jego połączenia.
+ */
 struct City {
     char* name; ///< String przechowujący nazwę miasta.
     struct ConnectionTree* root; ///< Korzeń drzewa ConnectionTree reprezentującego sąsiedztwo.
@@ -44,7 +47,7 @@ City newCity(char* name);
 * @param[in] route    – numer szukanej drogi krajowej.
 * @return true jeśli znaleziono obiekt, false w przeciwnym przypadku
 */
-bool belongsToRoute(City city, int route);
+bool belongsToRoute(City city, unsigned route);
 
 /** @brief Zapisuje w city przynależność do danej route
 * Wpisuje Route wśród numerów zapisanych dla danego miasta.
@@ -52,12 +55,12 @@ bool belongsToRoute(City city, int route);
 * @param[in] route    – numer dodawanej drogi krajowej.
 * @return true jeśli udało się zaalokować pamięć, false w przeciwnym przypadku
 */
-bool addToRoute(City city, int route);
+bool addToRoute(City city, unsigned route);
 
 /** @brief Usuwa z  city przynależność do danej route
 * Usuwa Route spośród numerów zapisanych dla danego miasta.
 * @param[in] city     – wskaźnik na  City, którego RouteNumber ma zostać usunięte
 * @param[in] route    – numer usuwanej drogi krajowej.
 */
-void removeFromRoute(City city, int route);
+void removeFromRoute(City city, unsigned route);
 #endif //DROGI_CITY_H

@@ -12,7 +12,9 @@
 
 #define KEY_LENGTH 32 ///< Długość klucza używanego do hashowania
 
-
+/**
+ * Implementacja struktury przechowującej informacje o pojedynczym drzewie sąsiedztwa.
+ */
 struct ConnectionTree {
     Connection content; ///< Wskaźnik na strukturę z informacją o połączeniu
     ConnectionTree left; ///< Wskaźnik na lewego syna
@@ -24,7 +26,7 @@ static int compareNodes(ConnectionTree t1, ConnectionTree t2);
 static int compareNodes2(ConnectionTree t1, City t2, uint32_t key);
 static ConnectionTree* findInsertion(ConnectionTree* start, ConnectionTree toInsert);
 
-bool addConnection(City city1, City city2, int length, int builtYear){
+bool addConnection(City city1, City city2, unsigned length, int builtYear){
     Connection connection1 = malloc(sizeof(struct Connection));
     if(!connection1){
         return false;
@@ -87,6 +89,12 @@ Connection getConnection(City city1, City city2){
     return NULL;
 }
 
+/**
+ * Dodaje rekurencyjnie do tablicy kolejne elementy danego drzewa połączeń
+ * @param city1 Węzeł, od którego rozpoczynami dodawanie, może być NULL
+ * @param allConnections Tablica do któregj wpisujemy połączenia
+ * @param counter licznik wpisanych połączeń i pozycja kolejnych wpisań
+ */
 static void recursiveGetConnections(ConnectionTree city1, Connection* allConnections, int* counter){
     if(!city1){
         return;
@@ -98,7 +106,7 @@ static void recursiveGetConnections(ConnectionTree city1, Connection* allConnect
 }
 
 Connection* getAllConnections(City city1){
-    Connection* allConnections = malloc(sizeof(Connection)*city1->numOfConnections);
+    Connection* allConnections = malloc(sizeof(Connection)*(size_t)(city1->numOfConnections));
     if(!allConnections){
         return NULL;
     }
@@ -117,6 +125,12 @@ void freeConnectionTree(ConnectionTree node){
     free(node);
 }
 
+/**
+ * @brief Znajduje miejsce w drzewie, gdzie należy wstawić dany węzeł. Zakłada brak powtórzeń.
+ * @param start adres węzła początkowego
+ * @param toInsert węzeł do wstawienia
+ * @return adres miejsca, gdzie należy wstawić węzeł
+ */
 static ConnectionTree* findInsertion(ConnectionTree* start, ConnectionTree toInsert){
     while(*start != NULL){
         if(compareNodes(*start, toInsert) <0){
@@ -129,6 +143,12 @@ static ConnectionTree* findInsertion(ConnectionTree* start, ConnectionTree toIns
     return start;
 }
 
+/**
+ * @brief Porównuje dwa węzły ConnectionTree początowo po kluczu, a w przypadku kolizji po nazwie miasta docelowego
+ * @param t1 pierwszy węzeł
+ * @param t2 drugi węzeł
+ * @return -1 jeśli t1<t2, 1 jeśli t1>t2, 0 jeśli są równe
+ */
 static int compareNodes(ConnectionTree t1, ConnectionTree t2){
     if(t1->key < t2->key){
         return -1;
@@ -139,6 +159,13 @@ static int compareNodes(ConnectionTree t1, ConnectionTree t2){
     return strcmp(t2->content->city2->name, t1->content->city2->name);
 }
 
+/**
+ * @brief Porównuje węzły jak compareNodes, jednak przyjmuje zamiast drugiego węzła jego składniki
+ * @param t1 pierwszy węzeł
+ * @param t2 docelowe miasto "drugiego węzła"
+ * @param key klucz "drugiego węzła"
+ * @return -1 jeśli t1<t2, 1 jeśli t1>t2, 0 jeśli są równe
+ */
 static int compareNodes2(ConnectionTree t1, City t2, uint32_t key){
     if(t1->key < key){
         return -1;
@@ -148,6 +175,11 @@ static int compareNodes2(ConnectionTree t1, City t2, uint32_t key){
     }
     return strcmp(t2->name, t1->content->city2->name);
 }
+
+/**
+ * @brief Usuwa węzeł wskazywany przez target z drzewa zachowujac własności BST
+ * @param target Węzeł do usunięcia
+ */
 void removeNode(ConnectionTree* target){
     if(!((*target)->left) && !((*target)->right)){
         free((*target)->content);

@@ -28,7 +28,7 @@ typedef struct City* City;
  * Przeznaczona do przechowywania przez miasto.
  */
 struct RouteNumber{
-    int number; ///< Numer drogi krajowej.
+    unsigned number; ///< Numer drogi krajowej.
     RouteNumber next; ///< Wskaźnik na kolejny element listy.
 };
 /**

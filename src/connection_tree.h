@@ -25,7 +25,7 @@ typedef struct Connection* Connection;
  * Definicja struktury przechowująca informacje o pojedynczym połączeniu.
  */
 struct Connection {
-    int length; ///< Długość drogi między miastami
+    unsigned length; ///< Długość drogi między miastami
     int year; ///< Rok budowy lub ostatniego remontu
     City city2; ///< Wskaźnik na miasto docelowe
 };
@@ -37,7 +37,7 @@ struct Connection {
  * @param[in] builtYear - rok budowy połączenia między miastami.
  * @return True w przypadku powodzenia, false gdy nie udało się zaalokować pamięci.
  */
-bool addConnection(City city1, City city2, int length, int builtYear);
+bool addConnection(City city1, City city2, unsigned length, int builtYear);
 
 /** @brief Zwraca z drzewa sąsiedztwa informację o połączeniu city1->city2.
  * @param[in] city1 - miasto wyjściowe, którego drzewo sąsiedztwa zostanie przeszukane

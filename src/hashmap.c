@@ -71,14 +71,14 @@ void deleteCitiesHashmap(Hashmap hashmap){
 //hashing function concept and magic numbers derived from https://en.wikipedia.org/wiki/Jenkins_hash_function
 
 uint32_t hash(const char* key, unsigned int bits){
-    int keyLength = strlen(key);
+    size_t keyLength = strlen(key);
     uint32_t  hash = 0;
     uint32_t mask = 1u << (bits-1);
     mask --;
     mask += 1u << (bits-1);
 
-    for(int i=0; i < keyLength; i++){
-        hash += key[i];
+    for(size_t i=0; i < keyLength; i++){
+        hash += (uint32_t)key[i];
         hash += (hash<<10u);
         hash ^= (hash >>6u);
     }

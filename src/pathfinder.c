@@ -24,7 +24,7 @@ struct State{
     City city; ///< Wskaźnik na miasto, które reprezentuje dany wezeł
     bool reached; ///< Flaga, czy osiągnięto już dany wierzchołek ścieżką ze źródła
     bool visited; ///< Flaga, czy odwiedzono już dany wierzchołek
-    long distance; ///< Zminimalizowana odległość od źródła
+    unsigned distance; ///< Zminimalizowana odległość od źródła
     int year; ///< Data ostatniego remontu, drugorzędowa cecha porządkująca
     bool sure; ///< Flaga, czy wierzchołek osiągnięto jednoznacznie wyznaczoną trasą
     int previous; ///< Numer porządkowy miasta, z którego osiągnięto węzeł najlepszą trasą.
@@ -45,16 +45,16 @@ struct State{
  * reprezentujący połączenie, którego nie należy używać przy wyszukiwaniu.
 * @return Wskaźnik na struct CityList lub NULL, gdy nie znaleziono jednoznacznej ścieżki.
 */
-CityList findPath(Map* map, City start, City end, int routeToExclude, Connection connectionToExclude, Connection connectionToExclude2){
+CityList findPath(Map* map, City start, City end, unsigned routeToExclude, Connection connectionToExclude, Connection connectionToExclude2){
     PriorityQueue queue = newQueue();
     if(!queue){
         return NULL;
     }
     CityList first = getCityList(map);
-    long dist;
-    int counter = 0;
+    unsigned dist;
+    size_t counter = 0;
     while(first != NULL){
-        dist = LONG_MAX/2;
+        dist = INT_MAX/2;
         if(first->city == start){
             dist = 0;
         }
@@ -70,8 +70,8 @@ CityList findPath(Map* map, City start, City end, int routeToExclude, Connection
         removePriorityQueue(queue);
         return NULL;
     }
-    for(int i = 0; i < counter+1; i++){
-        states[i].distance=LONG_MAX/2;
+    for(size_t i = 0; i < counter+1; i++){
+        states[i].distance=INT_MAX/2;
         states[i].year=INT_MAX;
         states[i].sure=true;
         states[i].previous=-1;
@@ -98,8 +98,8 @@ CityList findPath(Map* map, City start, City end, int routeToExclude, Connection
                 continue;
             }
             int secondCityNum = neighbors[i]->city2->number;
-            long newDistance = states[current->number].distance+neighbors[i]->length;
-            long newYear = states[current->number].year;
+            unsigned newDistance = states[current->number].distance+neighbors[i]->length;
+            int newYear = states[current->number].year;
             if(newYear>neighbors[i]->year){
                 newYear=neighbors[i]->year;
             }

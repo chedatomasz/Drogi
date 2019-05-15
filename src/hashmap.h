@@ -61,5 +61,11 @@ bool addCity (Hashmap hashmap, City city1);
  */
 bool removeCity (Hashmap hashmap, const char* city1);
 
+/**
+ * @brief Oblicza hash danego klucza, zwraca wynik obcięty do bits bitóœ
+ * @param key Hashowany string dowolnej długości
+ * @param bits Liczba bitów wyniku <=32
+ * @return Obliczony hash
+ */
 uint32_t hash(const char* key, unsigned int bits);
 #endif //DROGI_HASHMAP_H

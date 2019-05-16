@@ -1,54 +1,188 @@
-#include "map.h"
-
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
+#include <errno.h>
+#include <limits.h>
+#include "map.h"
+#include "input.h"
 
-#undef NDEBUG
+#define COMMAND_ADD_ROAD 1
+#define COMMAND_REPAIR_ROAD 2
+#define COMMAND_GET_ROUTE_DESCRIPTION 3
+#define COMMAND_ADD_ROUTE 4
+#define COMMAND_INVALID 5
 
-#include <assert.h>
+#define EXECUTION_SUCCESSFUL 0
+#define EXECUTION_FAILED 1
 
-int main() {
-  char const* str;
+Map *map;
 
-  Map* m = newMap();
-  assert(m);
+/**
+ * Zwalnia pamięć używaną przez program.
+ */
+void cleanUp() {
+    deleteMap(map);
+}
 
-  assert(addRoad(m, "Alinów", "Bór", 1, 2020));
-  assert(addRoad(m, "Bór", "Cielińsk-Niekłańsk", 2, 2020));
-  assert(addRoad(m, "Bór", "Dąb Stary", 3, 2020));
-  assert(addRoad(m, "Cielińsk-Niekłańsk", "Emiliew", 4, 2020));
-  assert(addRoad(m, "Dąb Stary", "Emiliew", 5, 2020));
-  assert(addRoad(m, "Emiliew", "Bór", 8, 2020));
-  assert(addRoad(m, "Emiliew", "Fraźnik Nowy", 3, 2020));
-  assert(!repairRoad(m, "Emiliew", "Cielińsk-Niekłańsk", 2019));
-  assert(repairRoad(m, "Emiliew", "Cielińsk-Niekłańsk", 2021));
-  assert(!repairRoad(m, "Emiliew", "Alinów", 2020));
-  assert(addRoad(m, "Fraźnik Nowy", "Grzegrzewo", 4, 2020));
-  assert(addRoad(m, "Alinów", "Grzegrzewo", 10, 2020));
-  assert(addRoad(m, "Homilcin", "Grzegrzewo", 5, 2020));
-  assert(addRoad(m, "Fraźnik Nowy", "Cielińsk-Niekłańsk", 2, 2020));
-  assert(!addRoad(m, "Fraźnik Nowy", "Cielińsk-Niekłańsk", 2, 2020));
-  assert(!addRoad(m, "Cielińsk-Niekłańsk", "Fraźnik Nowy", 2, 2020));
-  assert(!repairRoad(m, "Emiliew", "Bór", 2018));
-  assert(repairRoad(m, "Emiliew", "Cielińsk-Niekłańsk", 2021));
-  assert(repairRoad(m, "Emiliew", "Fraźnik Nowy", 2023));
-  assert(addRoad(m, "Homilcin", "Cielińsk-Niekłańsk", 3, 2020));
-  assert(newRoute(m, 10, "Alinów", "Emiliew"));
+/**
+ * @brief Wypisuje informację o błędzie na standardowe wyjście diagnostyczne
+ * @param line numer linii wejścia w której wystąpił błąd, numerowany od 1 i uwzględniający pomijane.
+ */
+void printError(int line) {
+    fprintf(stderr, "ERROR %d\n", line);
+}
 
-  str = getRouteDescription(m, 10);
-  assert(strcmp(str, "10;Alinów;1;2020;Bór;2;2020;Cielińsk-Niekłańsk;4;2021;Emiliew") == 0);
-  free((void *)str);
+/**
+ * @brief Rozpoznaje typ komendy w line, jednak nie sprawdza dalszej poprawności składniowej.
+ * @param line C-style string zawierający komendę lub NULL
+ * @return kod rozpoznanej komendy lub COMMAND_INVALID, gdy komenda niepoprawna/line to null.
+ */
+int getCommand(char *line) {
+    if (!line || strlen(line) == 0 || line[strlen(line)-1]==';') {
+        //tests for the special case of the command ending with ; which is not taken care of by the tokenizer
+        return COMMAND_INVALID;
+    }
+    if (strstr(line, "addRoad") == line) {//line begins with addRoad
+        return COMMAND_ADD_ROAD;
+    }
+    if (strstr(line, "repairRoad") == line) {//line begins with repairRoad
+        return COMMAND_REPAIR_ROAD;
+    }
+    if (strstr(line, "getRouteDescription") == line) {//line begins with getRouteDescription
+        return COMMAND_GET_ROUTE_DESCRIPTION;
+    }
+    if (isdigit(line[0])){
+        return COMMAND_ADD_ROUTE;
+    }
+    return COMMAND_INVALID;
+}
 
-  assert(extendRoute(m, 10, "Homilcin"));
+int executeAddRoad(char* line){
+    char* copy = line;
+    char* first = tokenize(&copy, ';');
+    char* city1 = tokenize(&copy, ';');
+    char* city2 = tokenize(&copy, ';');
+    char* length = tokenize(&copy, ';');
+    char* builtYear = tokenize(&copy, ';');
+    if(strcmp(first, "addRoad") != 0 || !city1 || !city2 || !length || !builtYear || tokenize(&copy, ';')){
+        return EXECUTION_FAILED;
+    }
+    //converting length from string to uint and checking bounds
+    char* end = NULL;
+    errno = 0;
+    unsigned long lengthLong = strtoul(length, &end, 10);
+    if(errno || *end != '\0' || lengthLong > UINT_MAX){
+        return EXECUTION_FAILED;
+    }
+    //converting builtYear from string to int and checking bounds
+    errno = 0;
+    long builtYearLong = strtol (builtYear, &end, 10);
+    if(errno || *end != '\0' || builtYearLong > INT_MAX || builtYearLong < INT_MIN){
+        return EXECUTION_FAILED;
+    }
+    bool result = addRoad(map, city1, city2, (unsigned) lengthLong, (int) builtYearLong);
+    return result? EXECUTION_SUCCESSFUL : EXECUTION_FAILED;
+}
 
-  str = getRouteDescription(m, 10);
-  assert(strcmp(str, "10;Alinów;1;2020;Bór;2;2020;Cielińsk-Niekłańsk;4;2021;Emiliew"
-                     ";3;2023;Fraźnik Nowy;4;2020;Grzegrzewo;5;2020;Homilcin") == 0);
-  free((void *)str);
+int executeRepairRoad(char* line){
+    char* copy = line;
+    char* first = tokenize(&copy, ';');
+    char* city1 = tokenize(&copy, ';');
+    char* city2 = tokenize(&copy, ';');
+    char* repairYear = tokenize(&copy, ';');
+    if(strcmp(first, "repairRoad") != 0 || !city1 || !city2 || !repairYear || tokenize(&copy, ';')){
+        return EXECUTION_FAILED;
+    }
 
-  assert(removeRoad(m,"Homilcin", "Cielińsk-Niekłańsk"));
+    //converting repairYear from string to int and checking bounds
+    char* end = NULL;
+    errno = 0;
+    long repairYearLong = strtol (repairYear, &end, 10);
+    if(errno || *end != '\0' || repairYearLong > INT_MAX || repairYearLong < INT_MIN){
+        return EXECUTION_FAILED;
+    }
+    bool result = repairRoad(map, city1, city2, (int) repairYearLong);
+    return result? EXECUTION_SUCCESSFUL : EXECUTION_FAILED;
+}
 
-  deleteMap(m);
+int executeGetRouteDescription(char* line){
+    char* copy = line;
+    char* first = tokenize(&copy, ';');
+    char* routeNumber = tokenize(&copy, ';');
+    if(strcmp(first, "getRouteDescription") != 0 || !routeNumber || tokenize(&copy, ';')){
+        return EXECUTION_FAILED;
+    }
 
-  return 0;
+    //converting routeNumber from string to uint and checking bounds
+    char* end = NULL;
+    errno = 0;
+    unsigned long routeNumberLong = strtoul (routeNumber, &end, 10);
+    if(errno || *end != '\0' || routeNumberLong > UINT_MAX){
+        return EXECUTION_FAILED;
+    }
+    char const* result = getRouteDescription(map, (unsigned) routeNumberLong);
+    if(result){
+        printf("%s\n", result);
+        free((void*)result);//Knowingly discarding the const qualifier.
+    }
+    return result? EXECUTION_SUCCESSFUL : EXECUTION_FAILED;
+}
+
+int executeAddRoute(char* line){
+
+}
+
+int executeCommand(int commandNumber, char* line){
+    if(commandNumber == COMMAND_INVALID){
+        if(line){
+            free(line);
+        }
+        return EXECUTION_FAILED;
+    }
+    if(commandNumber == COMMAND_ADD_ROAD){
+        int result = executeAddRoad(line);
+        free(line);
+        return result;
+    }
+    if(commandNumber == COMMAND_REPAIR_ROAD){
+        int result = executeRepairRoad(line);
+        free(line);
+        return result;
+    }
+    if(commandNumber == COMMAND_GET_ROUTE_DESCRIPTION){
+        int result = executeGetRouteDescription(line);
+        free(line);
+        return result;
+    }
+    if(commandNumber == COMMAND_ADD_ROUTE){
+        int result = executeAddRoute(line);
+        free(line);
+        return result;
+    }
+    return EXECUTION_FAILED;
+}
+
+int main(void) {
+    map = newMap();
+    if (!map) {
+        return 0;
+    }
+    if (atexit(cleanUp) != 0) {
+        return 0;
+    }
+    int lineNumber = 1;
+    char *currentLine = NULL;
+    while (peek() != EOF) {
+        if (peek() == (int) '\n' || peek() == (int) '#') {
+            readToLineEnd();
+        } else {
+            currentLine = readInNextLine();
+            if(executeCommand(getCommand(currentLine), currentLine) == EXECUTION_FAILED){
+                printError(lineNumber);
+            }
+        }
+        lineNumber++;
+    }
+    return 0;
 }

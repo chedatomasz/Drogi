@@ -68,20 +68,15 @@ int executeAddRoad(char* line){
     if(strcmp(first, "addRoad") != 0 || !city1 || !city2 || !length || !builtYear || tokenize(&copy, ';')){
         return EXECUTION_FAILED;
     }
-    //converting length from string to uint and checking bounds
-    char* end = NULL;
-    errno = 0;
-    unsigned long lengthLong = strtoul(length, &end, 10);
-    if(errno || *end != '\0' || lengthLong > UINT_MAX){
+    unsigned lengthInt = getUnsignedFromString(length);
+    if(errno){
         return EXECUTION_FAILED;
     }
-    //converting builtYear from string to int and checking bounds
-    errno = 0;
-    long builtYearLong = strtol (builtYear, &end, 10);
-    if(errno || *end != '\0' || builtYearLong > INT_MAX || builtYearLong < INT_MIN){
+    int builtYearInt = getIntFromString(builtYear);
+    if(errno){
         return EXECUTION_FAILED;
     }
-    bool result = addRoad(map, city1, city2, (unsigned) lengthLong, (int) builtYearLong);
+    bool result = addRoad(map, city1, city2, lengthInt, builtYearInt);
     return result? EXECUTION_SUCCESSFUL : EXECUTION_FAILED;
 }
 
@@ -94,15 +89,11 @@ int executeRepairRoad(char* line){
     if(strcmp(first, "repairRoad") != 0 || !city1 || !city2 || !repairYear || tokenize(&copy, ';')){
         return EXECUTION_FAILED;
     }
-
-    //converting repairYear from string to int and checking bounds
-    char* end = NULL;
-    errno = 0;
-    long repairYearLong = strtol (repairYear, &end, 10);
-    if(errno || *end != '\0' || repairYearLong > INT_MAX || repairYearLong < INT_MIN){
+    int repairYearInt = getIntFromString(repairYear);
+    if(errno){
         return EXECUTION_FAILED;
     }
-    bool result = repairRoad(map, city1, city2, (int) repairYearLong);
+    bool result = repairRoad(map, city1, city2, repairYearInt);
     return result? EXECUTION_SUCCESSFUL : EXECUTION_FAILED;
 }
 
@@ -113,24 +104,94 @@ int executeGetRouteDescription(char* line){
     if(strcmp(first, "getRouteDescription") != 0 || !routeNumber || tokenize(&copy, ';')){
         return EXECUTION_FAILED;
     }
-
-    //converting routeNumber from string to uint and checking bounds
-    char* end = NULL;
-    errno = 0;
-    unsigned long routeNumberLong = strtoul (routeNumber, &end, 10);
-    if(errno || *end != '\0' || routeNumberLong > UINT_MAX){
+    unsigned routeNumberInt = getUnsignedFromString(routeNumber);
+    if(errno){
         return EXECUTION_FAILED;
     }
-    char const* result = getRouteDescription(map, (unsigned) routeNumberLong);
+    char const* result = getRouteDescription(map, routeNumberInt);
     if(result){
         printf("%s\n", result);
         free((void*)result);//Knowingly discarding the const qualifier.
     }
     return result? EXECUTION_SUCCESSFUL : EXECUTION_FAILED;
 }
-
+/** W przypadku błędów w dalszej części polecenia, wykonuje zmiany na mapie wynikające z wcześniejszej części*/
 int executeAddRoute(char* line){
+    char* copy = line;
+    char* first = tokenize(&copy, ';');
+    char* city1 = tokenize(&copy, ';');
+    if(!first || !city1){
+        return EXECUTION_FAILED;
+    }
+    unsigned routeNumber = getUnsignedFromString(first);
+    if(errno || !verifyRouteNumber(map, routeNumber) || !verifyCityName(city1)){
+        return EXECUTION_FAILED;
+    }
+    CityList listOfCities = addCityToCityList(map, NULL, city1);
+    if(!listOfCities){
+        return EXECUTION_FAILED;
+    }
+    char* length;
+    char* builtYear;
+    char* city2;
+    while(1){
+        length = tokenize(&copy, ';');
+        builtYear = tokenize(&copy, ';');
+        city2 = tokenize(&copy, ';');
+        if(!length){//input has ended
+            break;
+        }
+        //input ends mid-sequence
+        if(!builtYear || !city2){
+            removeCityList(listOfCities);
+            return EXECUTION_FAILED;
+        }
+        unsigned lengthInt = getUnsignedFromString(length);
+        if(errno){
+            removeCityList(listOfCities);
+            return EXECUTION_FAILED;
+        }
+        int yearInt = getIntFromString(builtYear);
+        if(errno){
+            removeCityList(listOfCities);
+            return  EXECUTION_FAILED;
+        }
+        if(!verifyCityName(city2)){
+            removeCityList(listOfCities);
+            return EXECUTION_FAILED;
+        }
+        int status = roadStatus(map, city1, city2, lengthInt, yearInt);
 
+        if(status == ROAD_CONFLICTING){
+            removeCityList(listOfCities);
+            return EXECUTION_FAILED;
+        }
+
+        if(status == ROAD_NOT_FOUND){
+            if(!addRoad(map, city1, city2, lengthInt, yearInt)){
+                removeCityList(listOfCities);
+                return EXECUTION_FAILED;
+            }
+        }
+
+        if(status == ROAD_TO_REPAIR){
+            if(!repairRoad(map, city1, city2, yearInt)){
+                removeCityList(listOfCities);
+                return EXECUTION_FAILED;
+            }
+        }
+
+        if(!addCityToCityList(map, listOfCities, city2)){
+            removeCityList(listOfCities);
+            return EXECUTION_FAILED;
+        }
+
+        city1=city2;
+    }
+    if(!addRouteExplicit(map, routeNumber, listOfCities)){
+        return EXECUTION_FAILED;
+    }
+    return EXECUTION_SUCCESSFUL;
 }
 
 int executeCommand(int commandNumber, char* line){

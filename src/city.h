@@ -17,7 +17,7 @@
 typedef struct City* City;
 
 /**
- * Implementacja struktury przechowującej miasto i jego połączenia.
+ * @brief Implementacja struktury przechowującej miasto i jego połączenia.
  */
 struct City {
     char* name; ///< String przechowujący nazwę miasta.

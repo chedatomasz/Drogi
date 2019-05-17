@@ -33,4 +33,7 @@ int peek();
  */
 char* tokenize(char** line, char delimiter);
 
+unsigned getUnsignedFromString(char *token);
+
+int getIntFromString(char *token);
 #endif //DROGI_INPUT_H

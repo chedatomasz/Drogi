@@ -145,3 +145,50 @@ typedef struct CityList* CityList;///< Deklaracja aby uniknąć załączania w k
  */
 CityList getCityList(Map *map);
 #endif /* __MAP_H__ */
+
+/** @brief Funkcja weryfikująca, czy string spełnia warunki nazwy miasta*/
+bool verifyCityName(const char *city1);
+
+/** @brief Funkcja weryfikująca, czy unsigned spełnia warunki numeru nowej drogi*/
+bool verifyRouteNumber(Map* map, unsigned routeNumber);
+
+/**
+ * @brief Dodaje do mapy drogę o danym numerze składającą się z list.
+ * Wpisuje w miastach informacje o przynależności do route.
+ * W razie niepowodzenia samodzielnie zwalnia list!
+ * @param map Mapa, do której dodajemy route
+ * @param routeNumber numer dodawanej route
+ * @param list lista miast, z których składa się nowa droga
+ * @return true w przypadku powodzenia, w przeciwnym razie false
+ */
+bool addRouteExplicit(Map* map, unsigned routeNumber, CityList list);
+
+/**
+ * @brief Dodaje do listy miast miasto o nazwie city
+ * Jeśli miasto nie istnieje, to je tworzy.
+ * W przypadku gdy list nie istnieje, tworzy ją.
+ * @param map mapa, w której szukamy miasta city
+ * @param list lista do której mamy dodać, NULL, jeśli ma powstać
+ * @param city nazwa dodawanego miasta
+ * @return Początek CityList w przypadku powodzenia, NULL w przeciwnym razie.
+ */
+CityList addCityToCityList(Map* map, CityList list, char* city);
+
+/** @brief Funkcja usuwająca list. Nie usuwa zawartych miast */
+void removeCityList(CityList list);
+
+/**
+ * @brief Zwraca status drogi między city1 a city2 w mapie i jego zgodność
+ z podanymi danymi.
+ * @param map Mapa, w której sprawdzamy połaczenie.
+ * @param city1 Nazwa miasta startowego
+ * @param city2 Nazwa miasta docelowego
+ * @param length Długość drogi - musi być zgodna z istniejącą
+ * @param year Rok budowy/remontu drogi - nie starszy niż istniejący.
+ * @return Status zgodnie z poniższymi definicjami.
+ */
+int roadStatus(Map *map, char* city1, char* city2, unsigned length, int year);
+#define ROAD_NOT_FOUND 0
+#define ROAD_CONFLICTING 1
+#define ROAD_TO_REPAIR 2
+

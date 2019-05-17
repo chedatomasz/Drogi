@@ -6,6 +6,8 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
+#include <limits.h>
 #include "input.h"
 #define MAIN_FIRST_ALLOC_SIZE 4
 
@@ -75,4 +77,26 @@ char* tokenize(char** line, char delimiter){
         (*line) ++;
     }
     return result;
+}
+
+unsigned getUnsignedFromString(char *token){
+    char* end = NULL;
+    errno = 0;
+    unsigned long lengthLong = strtoul(token, &end, 10);
+    if(errno || *end != '\0' || lengthLong > UINT_MAX){
+        errno=1;
+        return 0;
+    }
+    return (unsigned) lengthLong;
+}
+
+int getIntFromString(char *token){
+    char* end = NULL;
+    errno = 0;
+    long YearLong = strtol (token, &end, 10);
+    if(errno || *end != '\0' || YearLong > INT_MAX || YearLong < INT_MIN){
+        errno=1;
+        return 0;
+    }
+    return (int) YearLong;
 }

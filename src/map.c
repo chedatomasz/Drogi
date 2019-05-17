@@ -23,8 +23,6 @@
 #include "pathfinder.h"
 
 
-static bool verifyCityName(const char *city);
-
 /**
  * Implementacja struktury przechowująca mapę dróg krajowych.
  */
@@ -536,7 +534,7 @@ char const* getRouteDescription(Map *map, unsigned routeId){
     while(iterator->next){
         strcat(result, iterator->city->name);
         Connection link = getConnection(iterator->city, iterator->next->city);
-        sprintf(intBuffer, ";%d;", link->length);
+        sprintf(intBuffer, ";%u;", link->length);
         strcat(result, intBuffer);
         sprintf(intBuffer, "%d;", link->year);
         strcat(result, intBuffer);
@@ -546,8 +544,7 @@ char const* getRouteDescription(Map *map, unsigned routeId){
     return result;
 }
 
-/** @brief Funkcja weryfikująca, czy string spełnia warunki nazwy miasta*/
-static bool verifyCityName(const char *city1){
+bool verifyCityName(const char *city1){
     size_t length = strlen(city1);
     bool valid = true;
     for(size_t i = 0; i < length; i++){
@@ -558,4 +555,107 @@ static bool verifyCityName(const char *city1){
     }
     return valid&&length>0;
 
+}
+
+bool verifyRouteNumber(Map* map, unsigned routeNumber){
+    return (map && routeNumber>=MIN_ROUTE_NUM && routeNumber<=MAX_ROUTE_NUM && !(map->routes[routeNumber]));
+}
+
+bool addRouteExplicit(Map* map, unsigned routeNumber, CityList list){
+    if(!list){
+        return false;
+    }
+    if(!map || !verifyRouteNumber(map, routeNumber)){
+        freeCityList(list);
+        return false;
+    }
+    if(!addRouteToCities(list, routeNumber)){
+        freeCityList(list);
+        return false;
+    }
+    map->routes[routeNumber] = malloc(sizeof(struct Route));
+    if(!(map->routes[routeNumber])){
+        freeCityList(list);
+        return false;
+    }
+    map->routes[routeNumber]->first = list;
+    return true;
+}
+
+CityList addCityToCityList(Map* map, CityList list, char* city){
+    if(!map || !city){
+        return NULL;
+    }
+    CityList node = malloc(sizeof(struct CityList));
+    if(!node){
+        return NULL;
+    }
+    City cityPtr = getCity(map->cities, city);
+    if(!cityPtr){
+        char* ourCity1 = malloc(sizeof(char)*(strlen(city)+1));
+        if(!ourCity1){
+            free(node);
+            return false;
+        }
+        strcpy(ourCity1, city);
+        CityList list1 = malloc(sizeof(struct CityList));
+        if(!list1){
+            free(node);
+            free(ourCity1);
+            return NULL;
+        }
+        cityPtr = newCity(ourCity1);
+        if(!cityPtr){
+            free(node);
+            free(list1);
+            free(ourCity1);
+            return NULL;
+        }
+        if(!addCity(map->cities, cityPtr)){
+            free(node);
+            free(cityPtr);
+            free(list1);
+            free(ourCity1);
+            return NULL;
+        }
+        list1->city = cityPtr;
+        list1->next = NULL;
+        addCityToList(map, list1);
+        cityPtr->number=map->numOfCities;
+        map->numOfCities++;
+    }
+    node->city = cityPtr;
+    node->next = NULL;
+    if(list == NULL){
+        return node;
+    }
+    CityList insert = list;
+    while(insert->next){
+        insert = insert->next;
+    }
+    insert->next = node;
+    return list;
+}
+
+void removeCityList(CityList list){
+    freeCityList(list);
+}
+
+int roadStatus(Map *map, char* city1, char* city2, unsigned length, int year){
+    if(!map || !city1 || !city2){
+        return ROAD_CONFLICTING;
+    }
+    City city1Ptr = getCity(map->cities, city1);
+    City city2Ptr = getCity(map->cities, city2);
+    if(!city1Ptr || !city2Ptr){
+        return ROAD_NOT_FOUND;
+    }
+    Connection found = getConnection(city1Ptr, city2Ptr);
+    if(!found){
+        return ROAD_NOT_FOUND;
+    }
+    if(found->length != length || found->year > year){
+        return ROAD_CONFLICTING;
+    }
+    return ROAD_TO_REPAIR;
 }

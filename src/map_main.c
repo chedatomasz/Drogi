@@ -117,23 +117,53 @@ int executeGetRouteDescription(char* line){
 }
 /** W przypadku błędów w dalszej części polecenia, wykonuje zmiany na mapie wynikające z wcześniejszej części*/
 int executeAddRoute(char* line){
+    if(!checkAddRouteSyntax(line)){
+        return EXECUTION_FAILED;
+    }
     char* copy = line;
     char* first = tokenize(&copy, ';');
     char* city1 = tokenize(&copy, ';');
-    if(!first || !city1){
+    char* length = tokenize(&copy, ';');
+    char* builtYear = tokenize(&copy, ';');
+    char* city2 = tokenize(&copy, ';');
+    if(!first || !city1 || !length || !builtYear || !city2){
         return EXECUTION_FAILED;
     }
     unsigned routeNumber = getUnsignedFromString(first);
-    if(errno || !verifyRouteNumber(map, routeNumber) || !verifyCityName(city1)){
+    if(errno || !verifyRouteNumber(map, routeNumber) || !verifyCityName(city1) || !verifyCityName(city2)){
         return EXECUTION_FAILED;
+    }
+    unsigned lengthInt = getUnsignedFromString(length);
+    if(errno){
+        return EXECUTION_FAILED;
+    }
+    int yearInt = getIntFromString(builtYear);
+    if(errno){
+        return EXECUTION_FAILED;
+    }
+    int status = roadStatus(map, city1, city2, lengthInt, yearInt);
+    if(status == ROAD_CONFLICTING){
+        return EXECUTION_FAILED;
+    }
+    if(status == ROAD_NOT_FOUND){
+        if(!addRoad(map, city1, city2, lengthInt, yearInt)){
+            return EXECUTION_FAILED;
+        }
+    }
+    if(status == ROAD_TO_REPAIR){
+        if(!repairRoad(map, city1, city2, yearInt)){
+            return EXECUTION_FAILED;
+        }
     }
     CityList listOfCities = addCityToCityList(map, NULL, city1);
     if(!listOfCities){
         return EXECUTION_FAILED;
     }
-    char* length;
-    char* builtYear;
-    char* city2;
+    if(!addCityToCityList(map, listOfCities, city2)){
+        removeCityList(listOfCities);
+        return EXECUTION_FAILED;
+    }
+    city1=city2;
     while(1){
         length = tokenize(&copy, ';');
         builtYear = tokenize(&copy, ';');
@@ -146,12 +176,12 @@ int executeAddRoute(char* line){
             removeCityList(listOfCities);
             return EXECUTION_FAILED;
         }
-        unsigned lengthInt = getUnsignedFromString(length);
+        lengthInt = getUnsignedFromString(length);
         if(errno){
             removeCityList(listOfCities);
             return EXECUTION_FAILED;
         }
-        int yearInt = getIntFromString(builtYear);
+        yearInt = getIntFromString(builtYear);
         if(errno){
             removeCityList(listOfCities);
             return  EXECUTION_FAILED;
@@ -160,7 +190,7 @@ int executeAddRoute(char* line){
             removeCityList(listOfCities);
             return EXECUTION_FAILED;
         }
-        int status = roadStatus(map, city1, city2, lengthInt, yearInt);
+        status = roadStatus(map, city1, city2, lengthInt, yearInt);
 
         if(status == ROAD_CONFLICTING){
             removeCityList(listOfCities);

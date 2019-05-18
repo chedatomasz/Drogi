@@ -8,8 +8,14 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <limits.h>
+#include <ctype.h>
 #include "input.h"
 #define MAIN_FIRST_ALLOC_SIZE 4
+
+#define STATE_ENTRY 0
+#define STATE_CITY 1
+#define STATE_LENGTH 2
+#define STATE_YEAR 3
 
 char *readInNextLine() {
     size_t allocatedSize = MAIN_FIRST_ALLOC_SIZE;
@@ -99,4 +105,80 @@ int getIntFromString(char *token){
         return 0;
     }
     return (int) YearLong;
+}
+
+bool checkAddRouteSyntax(const char* line){
+    int state = STATE_ENTRY;
+    int position = 0;
+    int fresh = 0;
+    bool canEndNowIfCity = false;
+    while(line[position]!='\0'){
+        switch (state) {
+            case STATE_ENTRY://routenum
+                if(isdigit(line[position])){
+                    position++;
+                    fresh = 1;
+                }
+                else if(line[position] == ';' && fresh != 0){
+                    position++;
+                    state = STATE_CITY;
+                    fresh = 0;
+                }
+                else{
+                    return false;
+                }
+                break;
+            case STATE_CITY:
+                if(line[position]>=0 && line[position]<=31){
+                    return false;
+                }
+                else if(line[position] != ';'){
+                    fresh = 1;
+                    position++;
+                }
+                else if(fresh == 0){
+                    return false;
+                }
+                else{
+                    state = STATE_LENGTH;
+                    fresh = 0;
+                    canEndNowIfCity = true;
+                    position++;
+                }
+                break;
+            case STATE_LENGTH:
+                if(isdigit(line[position])){
+                    position++;
+                    fresh = 1;
+                }
+                else if(line[position] == ';' && fresh != 0){
+                    state = STATE_YEAR;
+                    fresh = 0;
+                    position++;
+                }
+                else{
+                    return false;
+                }
+                break;
+            case STATE_YEAR:
+                if(fresh == 0 && line[position] == '-'){
+                    position++;
+                }
+                else if(isdigit(line[position])){
+                    position++;
+                    fresh = 1;
+                }
+                else if(line[position] == ';' && fresh != 0){
+                    state = STATE_CITY;
+                    fresh = 0;
+                    position++;
+                }
+                else{
+                    return false;
+                }
+                break;
+        }
+
+    }
+    return (canEndNowIfCity && fresh!=0 && state == STATE_CITY);
 }

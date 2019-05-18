@@ -164,8 +164,7 @@ bool verifyRouteNumber(Map* map, unsigned routeNumber);
 bool addRouteExplicit(Map* map, unsigned routeNumber, CityList list);
 
 /**
- * @brief Dodaje do listy miast miasto o nazwie city
- * Jeśli miasto nie istnieje, to je tworzy.
+ * @brief Dodaje do listy miast istniejące miasto o nazwie city
  * W przypadku gdy list nie istnieje, tworzy ją.
  * @param map mapa, w której szukamy miasta city
  * @param list lista do której mamy dodać, NULL, jeśli ma powstać
@@ -188,7 +187,7 @@ void removeCityList(CityList list);
  * @return Status zgodnie z poniższymi definicjami.
  */
 int roadStatus(Map *map, char* city1, char* city2, unsigned length, int year);
-#define ROAD_NOT_FOUND 0
-#define ROAD_CONFLICTING 1
-#define ROAD_TO_REPAIR 2
+#define ROAD_NOT_FOUND 0///<A define for roadStatus
+#define ROAD_CONFLICTING 1///<A define for roadStatus
+#define ROAD_TO_REPAIR 2///<A define for roadStatus
 

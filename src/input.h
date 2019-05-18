@@ -36,4 +36,6 @@ char* tokenize(char** line, char delimiter);
 unsigned getUnsignedFromString(char *token);
 
 int getIntFromString(char *token);
+
+bool checkAddRouteSyntax(const char* line);
 #endif //DROGI_INPUT_H

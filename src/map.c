@@ -592,37 +592,7 @@ CityList addCityToCityList(Map* map, CityList list, char* city){
     }
     City cityPtr = getCity(map->cities, city);
     if(!cityPtr){
-        char* ourCity1 = malloc(sizeof(char)*(strlen(city)+1));
-        if(!ourCity1){
-            free(node);
-            return false;
-        }
-        strcpy(ourCity1, city);
-        CityList list1 = malloc(sizeof(struct CityList));
-        if(!list1){
-            free(node);
-            free(ourCity1);
-            return NULL;
-        }
-        cityPtr = newCity(ourCity1);
-        if(!cityPtr){
-            free(node);
-            free(list1);
-            free(ourCity1);
-            return NULL;
-        }
-        if(!addCity(map->cities, cityPtr)){
-            free(node);
-            free(cityPtr);
-            free(list1);
-            free(ourCity1);
-            return NULL;
-        }
-        list1->city = cityPtr;
-        list1->next = NULL;
-        addCityToList(map, list1);
-        cityPtr->number=map->numOfCities;
-        map->numOfCities++;
+        return NULL;
     }
     node->city = cityPtr;
     node->next = NULL;

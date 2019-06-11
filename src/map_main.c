@@ -7,12 +7,6 @@
 #include "map.h"
 #include "input.h"
 
-#define COMMAND_ADD_ROAD 1
-#define COMMAND_REPAIR_ROAD 2
-#define COMMAND_GET_ROUTE_DESCRIPTION 3
-#define COMMAND_ADD_ROUTE 4
-#define COMMAND_INVALID 5
-
 #define EXECUTION_SUCCESSFUL 0
 #define EXECUTION_FAILED 1
 
@@ -31,31 +25,6 @@ void cleanUp() {
  */
 void printError(int line) {
     fprintf(stderr, "ERROR %d\n", line);
-}
-
-/**
- * @brief Rozpoznaje typ komendy w line, jednak nie sprawdza dalszej poprawności składniowej.
- * @param line C-style string zawierający komendę lub NULL
- * @return kod rozpoznanej komendy lub COMMAND_INVALID, gdy komenda niepoprawna/line to null.
- */
-int getCommand(char *line) {
-    if (!line || strlen(line) == 0 || line[strlen(line)-1]==';') {
-        //tests for the special case of the command ending with ; which is not taken care of by the tokenizer
-        return COMMAND_INVALID;
-    }
-    if (strstr(line, "addRoad") == line) {//line begins with addRoad
-        return COMMAND_ADD_ROAD;
-    }
-    if (strstr(line, "repairRoad") == line) {//line begins with repairRoad
-        return COMMAND_REPAIR_ROAD;
-    }
-    if (strstr(line, "getRouteDescription") == line) {//line begins with getRouteDescription
-        return COMMAND_GET_ROUTE_DESCRIPTION;
-    }
-    if (isdigit(line[0])){
-        return COMMAND_ADD_ROUTE;
-    }
-    return COMMAND_INVALID;
 }
 
 int executeAddRoad(char* line){
@@ -155,11 +124,13 @@ int executeAddRoute(char* line){
             return EXECUTION_FAILED;
         }
     }
-    CityList listOfCities = addCityToCityList(map, NULL, city1);
+    CityList listOfCities = newCityList(map, city1);
     if(!listOfCities){
         return EXECUTION_FAILED;
     }
-    if(!addCityToCityList(map, listOfCities, city2)){
+    CityList workingListOfCities = listOfCities;
+    workingListOfCities = addCityToCityList(map, workingListOfCities, city2);
+    if(!workingListOfCities){
         removeCityList(listOfCities);
         return EXECUTION_FAILED;
     }
@@ -210,8 +181,8 @@ int executeAddRoute(char* line){
                 return EXECUTION_FAILED;
             }
         }
-
-        if(!addCityToCityList(map, listOfCities, city2)){
+        workingListOfCities = addCityToCityList(map, workingListOfCities, city2);
+        if(!workingListOfCities){
             removeCityList(listOfCities);
             return EXECUTION_FAILED;
         }
@@ -224,33 +195,120 @@ int executeAddRoute(char* line){
     return EXECUTION_SUCCESSFUL;
 }
 
-int executeCommand(int commandNumber, char* line){
-    if(commandNumber == COMMAND_INVALID){
+int executeNewRoute(char* line){
+    char* copy = line;
+    char* command = tokenize(&copy, ';');
+    char* routeId = tokenize(&copy, ';');
+    char* city1 = tokenize(&copy, ';');
+    char* city2 = tokenize(&copy, ';');
+    if(strcmp(command, "newRoute") != 0 || !city1 || !city2 || !routeId || tokenize(&copy, ';')){
+        return EXECUTION_FAILED;
+    }
+    unsigned routeIdInt = getUnsignedFromString(routeId);
+    if(errno){
+        return EXECUTION_FAILED;
+    }
+    bool result = newRoute(map, routeIdInt, city1, city2);
+    return result? EXECUTION_SUCCESSFUL : EXECUTION_FAILED;
+}
+
+int executeExtendRoute(char* line){
+    char* copy = line;
+    char* command = tokenize(&copy, ';');
+    char* routeId = tokenize(&copy, ';');
+    char* city1 = tokenize(&copy, ';');
+    if(strcmp(command, "extendRoute") != 0 || !city1 || !routeId || tokenize(&copy, ';')){
+        return EXECUTION_FAILED;
+    }
+    unsigned routeIdInt = getUnsignedFromString(routeId);
+    if(errno){
+        return EXECUTION_FAILED;
+    }
+    bool result = extendRoute(map, routeIdInt, city1);
+    return result? EXECUTION_SUCCESSFUL : EXECUTION_FAILED;
+}
+
+int executeRemoveRoad(char* line){
+    char* copy = line;
+    char* command = tokenize(&copy, ';');
+    char* city1 = tokenize(&copy, ';');
+    char* city2 = tokenize(&copy, ';');
+    if(strcmp(command, "removeRoad") != 0 || !city1 || !city2 || tokenize(&copy, ';')){
+        return EXECUTION_FAILED;
+    }
+    bool result = removeRoad(map, city1, city2);
+    return result? EXECUTION_SUCCESSFUL : EXECUTION_FAILED;
+}
+
+int executeRemoveRoute(char* line){
+    char* copy = line;
+    char* command = tokenize(&copy, ';');
+    char* routeId = tokenize(&copy, ';');
+    if(strcmp(command, "removeRoute") != 0 || !routeId || tokenize(&copy, ';')){
+        return EXECUTION_FAILED;
+    }
+    unsigned routeIdInt = getUnsignedFromString(routeId);
+    if(errno){
+        return EXECUTION_FAILED;
+    }
+    bool result = removeRoute(map, routeIdInt);
+    return result? EXECUTION_SUCCESSFUL : EXECUTION_FAILED;
+}
+
+/**
+ * @brief Rozpoznaje i wykonuje komendę zawartą w linii
+ * @param line C-style string zawierający komendę lub NULL
+ * @return EXECUTION_FAILED lub EXECUTION_SUCCESSFUL zależnie od wyniku.
+ */
+int getAndExecuteCommand(char *line) {
+    if (!line || strlen(line) == 0 || line[strlen(line)-1]==';') {
+        //tests for the special case of the command ending with ; which is not taken care of by the tokenizer
         if(line){
             free(line);
         }
         return EXECUTION_FAILED;
     }
-    if(commandNumber == COMMAND_ADD_ROAD){
+    if (strstr(line, "addRoad") == line) {//line begins with addRoad
         int result = executeAddRoad(line);
         free(line);
         return result;
     }
-    if(commandNumber == COMMAND_REPAIR_ROAD){
+    if (strstr(line, "repairRoad") == line) {//line begins with repairRoad
         int result = executeRepairRoad(line);
         free(line);
         return result;
     }
-    if(commandNumber == COMMAND_GET_ROUTE_DESCRIPTION){
+    if (strstr(line, "getRouteDescription") == line) {//line begins with getRouteDescription
         int result = executeGetRouteDescription(line);
         free(line);
         return result;
     }
-    if(commandNumber == COMMAND_ADD_ROUTE){
+    if (strstr(line, "newRoute") == line) {//line begins with newRoute
+        int result = executeNewRoute(line);
+        free(line);
+        return result;
+    }
+    if (strstr(line, "extendRoute") == line) {//line begins with extendRoute
+        int result = executeExtendRoute(line);
+        free(line);
+        return result;
+    }
+    if (strstr(line, "removeRoad") == line) {//line begins with removeRoad
+        int result = executeRemoveRoad(line);
+        free(line);
+        return result;
+    }
+    if (strstr(line, "removeRoute") == line) {//line begins with removeRoute
+        int result = executeRemoveRoute(line);
+        free(line);
+        return result;
+    }
+    if (isdigit(line[0])){
         int result = executeAddRoute(line);
         free(line);
         return result;
     }
+    free(line);
     return EXECUTION_FAILED;
 }
 
@@ -269,7 +327,7 @@ int main(void) {
             readToLineEnd();
         } else {
             currentLine = readInNextLine();
-            if(executeCommand(getCommand(currentLine), currentLine) == EXECUTION_FAILED){
+            if(getAndExecuteCommand(currentLine) == EXECUTION_FAILED){
                 printError(lineNumber);
             }
         }

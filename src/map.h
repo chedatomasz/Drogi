@@ -2,6 +2,7 @@
  * Interfejs klasy przechowującej mapę dróg krajowych
  *
  * @author Łukasz Kamiński <kamis@mimuw.edu.pl>, Marcin Peczarski <marpe@mimuw.edu.pl>
+ * @author Modyfikacje: Tomasz Cheda
  * @copyright Uniwersytet Warszawski
  * @date 20.03.2019
  */
@@ -120,6 +121,18 @@ bool extendRoute(Map *map, unsigned routeId, const char *city);
  */
 bool removeRoad(Map *map, const char *city1, const char *city2);
 
+/** @brief Usuwa drogę krajowym o podanym numerze.
+ * Usuwa z mapy dróg drogę krajową o podanym numerze, jeśli taka istnieje,
+ * a w przeciwnym przypadku, tzn. gdy podana droga krajowa nie istnieje
+ * lub podany numer jest niepoprawny, niczego nie zmienia w mapie dróg.
+ * Nie usuwa odcinków dróg ani miast.
+ * @param[in, out] map  – wskaźnik na strukturę przechowującą mapę dróg;
+ * @param routeId       – numer drogi krajowej.
+ * @return Wartość @p true, jeśli usunięto drogę o podanym numerze,
+ * Wartość @p false gdy podana droga nie istnieje lub numer jest niepoprawny.
+ */
+bool removeRoute(Map *map, unsigned routeId);
+
 /** @brief Udostępnia informacje o drodze krajowej.
  * Zwraca wskaźnik na napis, który zawiera informacje o drodze krajowej. Alokuje
  * pamięć na ten napis. Zwraca pusty napis, jeśli nie istnieje droga krajowa
@@ -164,12 +177,20 @@ bool verifyRouteNumber(Map* map, unsigned routeNumber);
 bool addRouteExplicit(Map* map, unsigned routeNumber, CityList list);
 
 /**
- * @brief Dodaje do listy miast istniejące miasto o nazwie city
- * W przypadku gdy list nie istnieje, tworzy ją.
+ * @brief Tworzy nową listę miast zawierającą dane miasto
  * @param map mapa, w której szukamy miasta city
- * @param list lista do której mamy dodać, NULL, jeśli ma powstać
  * @param city nazwa dodawanego miasta
- * @return Początek CityList w przypadku powodzenia, NULL w przeciwnym razie.
+ * @return Wskaźnik w przypadku powodzenia, NULL w przeciwnym razie
+ */
+CityList newCityList(Map* map, char* city);
+
+/**
+ * @brief Dodaje do listy miast istniejące miasto o nazwie city
+ * Złożoność liniowa od pozostającej długości
+ * @param map mapa, w której szukamy miasta city
+ * @param list lista do której mamy dodać
+ * @param city nazwa dodawanego miasta
+ * @return Wskaźnik na koniec w przypadku powodzenia, NULL w przeciwnym razie
  */
 CityList addCityToCityList(Map* map, CityList list, char* city);
 

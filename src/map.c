@@ -30,6 +30,7 @@ struct Map {
     Route routes[NUMBER_OF_ROUTES]; ///< Tablica statyczna przechowująca zapisy dróg krajowych
     Hashmap cities; ///< Wskaźnik na hashmapę<string, City>
     CityList allCities; ///< Lista wszystkich miast aby uniknąć przechodzenia hashmapy
+    CityList lastCity; ///< Koniec powyższej listy
     int numOfCities; ///< Liczba miast na mapie, używane do ich indeksowania
 };
 
@@ -51,6 +52,7 @@ Map* newMap(void){
         return NULL;
     }
     result->allCities = NULL;
+    result->lastCity = NULL;
     result->numOfCities = 0;
     return result;
 }
@@ -71,13 +73,14 @@ void deleteMap(Map* map){
 static void addCityToList(Map* map, CityList list){
     if(map->allCities == NULL){
         map->allCities = list;
+        map->lastCity = list;
         return;
     }
-    CityList insert = map->allCities;
-    while(insert->next){
-        insert = insert->next;
+    while(map->lastCity->next){
+        map->lastCity = map->lastCity->next;
     }
-    insert->next = list;
+    map->lastCity->next = list;
+    map->lastCity = list;
 }
 
 /** @brief Dopisuje w miastach z listy routeId do listy przechodzących przez nie dróg */
@@ -103,6 +106,18 @@ static void removeRouteFromCities(CityList first, unsigned routeId){
         removeFromRoute(iterator->city, routeId);
         iterator = iterator->next;
     }
+}
+
+bool removeRoute(Map *map, unsigned routeId) {
+    if(!map || routeId<MIN_ROUTE_NUM || routeId>MAX_ROUTE_NUM || (map->routes[routeId])){
+        return false;
+    }
+    Route subject = map->routes[routeId];
+    removeRouteFromCities(subject->first, routeId);
+    freeCityList(subject->first);
+    free(subject);
+    map->routes[routeId]=NULL;
+    return true;
 }
 
 bool addRoad(Map *map, const char *city1, const char *city2, unsigned length, int builtYear){
@@ -582,7 +597,7 @@ bool addRouteExplicit(Map* map, unsigned routeNumber, CityList list){
     return true;
 }
 
-CityList addCityToCityList(Map* map, CityList list, char* city){
+CityList newCityList(Map* map, char* city){
     if(!map || !city){
         return NULL;
     }
@@ -596,15 +611,28 @@ CityList addCityToCityList(Map* map, CityList list, char* city){
     }
     node->city = cityPtr;
     node->next = NULL;
-    if(list == NULL){
-        return node;
+    return node;
+}
+
+CityList addCityToCityList(Map* map, CityList list, char* city){
+    if(!map || !city || !list){
+        return false;
     }
-    CityList insert = list;
-    while(insert->next){
-        insert = insert->next;
+    CityList node = malloc(sizeof(struct CityList));
+    if(!node){
+        return false;
     }
-    insert->next = node;
-    return list;
+    City cityPtr = getCity(map->cities, city);
+    if(!cityPtr){
+        return false;
+    }
+    node->city = cityPtr;
+    node->next = NULL;
+    while(list->next){
+        list = list->next;
+    }
+    list->next = node;
+    return list->next;
 }
 
 void removeCityList(CityList list){

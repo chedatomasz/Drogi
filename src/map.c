@@ -109,7 +109,7 @@ static void removeRouteFromCities(CityList first, unsigned routeId){
 }
 
 bool removeRoute(Map *map, unsigned routeId) {
-    if(!map || routeId<MIN_ROUTE_NUM || routeId>MAX_ROUTE_NUM || (map->routes[routeId])){
+    if(!map || routeId<MIN_ROUTE_NUM || routeId>MAX_ROUTE_NUM || !(map->routes[routeId])){
         return false;
     }
     Route subject = map->routes[routeId];

@@ -32,6 +32,11 @@ char *readInNextLine() {
             free(line);
             return NULL;
         }
+        if (buffer == 0) {
+            free(line);
+            readToLineEnd();
+            return NULL;
+        }
         if (buffer == '\n') {
             stop = true;
             continue;

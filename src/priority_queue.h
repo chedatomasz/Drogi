@@ -14,7 +14,7 @@
 /**
  * Struktura przechowująca kolejkę priorytetową.
  */
-typedef struct PriorityQueue* PriorityQueue;
+typedef struct PriorityQueue *PriorityQueue;
 
 /**
  * @brief Zwraca, czy dana kolejka priorytetowa jest pusta.
@@ -36,7 +36,7 @@ PriorityQueue newQueue();
  * Utrzymuje własność kopca binarnego typu min.
  * @return Wskaźnik na najmniejszy element lub NULL, gdy kolejka jest pusta.
  */
-void* popMin(PriorityQueue queue);
+void *popMin(PriorityQueue queue);
 
 /** @brief Wstawia element do kolejki priorytetowej.
  * Utrzymuje własność kopca binarnego typu min.
@@ -46,11 +46,12 @@ void* popMin(PriorityQueue queue);
  * @return True w przypadku powodzenia lub false,
  * gdy nie udało się zaalokować pamięci.
  */
-bool insertPriorityQueue(PriorityQueue queue, void* obj, unsigned key);
+bool insertPriorityQueue(PriorityQueue queue, void *obj, unsigned key);
 
 /** @brief Usuwa kolejkę priotytetową.
  * Wyrzuca pozostałe elementy i zwalnia pamięć.
  * @param[in] queue - wskaźnik na usuwaną kolejkę.
  */
 void removePriorityQueue(PriorityQueue queue);
+
 #endif //DROGI_PRIORITY_QUEUE_H

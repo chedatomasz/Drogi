@@ -5,19 +5,20 @@
 //
 // Created by chedat on 25.04.19.
 //
-void freeCity(City city){
+void freeCity(City city) {
     freeConnectionTree(city->root);
     free(city->name);
-    while(city->routes){
+    while (city->routes) {
         RouteNumber temp = city->routes->next;
         free(city->routes);
         city->routes = temp;
     }
     free(city);
 }
-City newCity(char* name){
+
+City newCity(char *name) {
     City result = malloc(sizeof(struct City));
-    if(!result){
+    if (!result) {
         return NULL;
     }
     result->name = name;
@@ -28,57 +29,57 @@ City newCity(char* name){
     return result;
 }
 
-bool belongsToRoute(City city, unsigned route){
-    if(!city){
+bool belongsToRoute(City city, unsigned route) {
+    if (!city) {
         return false;
     }
-    RouteNumber number= city->routes;
-    while(number && number->number!=route){
-        number=number->next;
+    RouteNumber number = city->routes;
+    while (number && number->number != route) {
+        number = number->next;
     }
-    return (number!=NULL);
+    return (number != NULL);
 }
 
-bool addToRoute(City city, unsigned route){
-    if(!city){
+bool addToRoute(City city, unsigned route) {
+    if (!city) {
         return false;
     }
-    if(belongsToRoute(city, route)){
+    if (belongsToRoute(city, route)) {
         return false;
     }
     RouteNumber new = malloc(sizeof(struct RouteNumber));
-    if(!new){
+    if (!new) {
         return false;
     }
     new->next = NULL;
     new->number = route;
-    if(!city->routes){
+    if (!city->routes) {
         city->routes = new;
         return true;
     }
     RouteNumber insertion = city->routes;
-    while(insertion->next){
+    while (insertion->next) {
         insertion = insertion->next;
     }
     insertion->next = new;
     return true;
 }
 
-void removeFromRoute(City city, unsigned route){
-    if(!city){
+void removeFromRoute(City city, unsigned route) {
+    if (!city) {
         return;
     }
-    if(!belongsToRoute(city, route)){
+    if (!belongsToRoute(city, route)) {
         return;
     }
-    if(city->routes->number==route){
+    if (city->routes->number == route) {
         RouteNumber temp = city->routes;
         city->routes = temp->next;
         free(temp);
         return;
     }
     RouteNumber insertion = city->routes;
-    while(insertion->next->number !=route){
+    while (insertion->next->number != route) {
         insertion = insertion->next;
     }
     RouteNumber temp = insertion->next;

@@ -13,14 +13,14 @@
 /**
  * @brief Struktura reprezentująca stan wierzchołka grafu.
  */
-typedef struct State* State;
+typedef struct State *State;
 
 
 /**
  * @brief Struktura przechowująca stan wierzchołka
  * grafu, który przeszukujemy
  */
-struct State{
+struct State {
     City city; ///< Wskaźnik na miasto, które reprezentuje dany wezeł
     bool reached; ///< Flaga, czy osiągnięto już dany wierzchołek ścieżką ze źródła
     bool visited; ///< Flaga, czy odwiedzono już dany wierzchołek
@@ -45,87 +45,87 @@ struct State{
  * reprezentujący połączenie, którego nie należy używać przy wyszukiwaniu.
 * @return Wskaźnik na struct CityList lub NULL, gdy nie znaleziono jednoznacznej ścieżki.
 */
-CityList findPath(Map* map, City start, City end, unsigned routeToExclude, Connection connectionToExclude, Connection connectionToExclude2){
+CityList findPath(Map *map, City start, City end, unsigned routeToExclude, Connection connectionToExclude,
+                  Connection connectionToExclude2) {
     PriorityQueue queue = newQueue();
-    if(!queue){
+    if (!queue) {
         return NULL;
     }
     CityList first = getCityList(map);
     unsigned dist;
     size_t counter = 0;
-    while(first != NULL){
-        dist = INT_MAX/2;
-        if(first->city == start){
+    while (first != NULL) {
+        dist = INT_MAX / 2;
+        if (first->city == start) {
             dist = 0;
         }
-        if(!insertPriorityQueue(queue, first->city, dist)){
+        if (!insertPriorityQueue(queue, first->city, dist)) {
             removePriorityQueue(queue);
             return NULL;
         }
         counter++;
         first = first->next;
     }
-    State states= malloc(sizeof(struct State)*(counter+1));
-    if(!states){
+    State states = malloc(sizeof(struct State) * (counter + 1));
+    if (!states) {
         removePriorityQueue(queue);
         return NULL;
     }
-    for(size_t i = 0; i < counter+1; i++){
-        states[i].distance=INT_MAX/2;
-        states[i].year=INT_MAX;
-        states[i].sure=true;
-        states[i].previous=-1;
+    for (size_t i = 0; i < counter + 1; i++) {
+        states[i].distance = INT_MAX / 2;
+        states[i].year = INT_MAX;
+        states[i].sure = true;
+        states[i].previous = -1;
         states[i].visited = false;
         states[i].reached = false;
     }
-    states[start->number].distance=0;
-    states[start->number].previous=start->number;
-    states[start->number].year=INT_MAX;
-    states[start->number].reached=true;
-    while(!isEmpty(queue)){
+    states[start->number].distance = 0;
+    states[start->number].previous = start->number;
+    states[start->number].year = INT_MAX;
+    states[start->number].reached = true;
+    while (!isEmpty(queue)) {
         City current = popMin(queue);
-        if(states[current->number].visited || !states[current->number].reached || !states[current->number].sure){
+        if (states[current->number].visited || !states[current->number].reached || !states[current->number].sure) {
             continue;
         }
         states[current->number].city = current;
         states[current->number].visited = true;
-        if(belongsToRoute(current, routeToExclude) && current!=start){
+        if (belongsToRoute(current, routeToExclude) && current != start) {
             continue;
         }
-        Connection* neighbors = getAllConnections(current);
-        for(int i = 0; i < current->numOfConnections; i++){
-            if(neighbors[i]==connectionToExclude || neighbors[i]==connectionToExclude2){
+        Connection *neighbors = getAllConnections(current);
+        for (int i = 0; i < current->numOfConnections; i++) {
+            if (neighbors[i] == connectionToExclude || neighbors[i] == connectionToExclude2) {
                 continue;
             }
             int secondCityNum = neighbors[i]->city2->number;
-            unsigned newDistance = states[current->number].distance+neighbors[i]->length;
+            unsigned newDistance = states[current->number].distance + neighbors[i]->length;
             int newYear = states[current->number].year;
-            if(newYear>neighbors[i]->year){
-                newYear=neighbors[i]->year;
+            if (newYear > neighbors[i]->year) {
+                newYear = neighbors[i]->year;
             }
-            if(!states[secondCityNum].reached || newDistance < states[secondCityNum].distance){//If path is shorter:
-                states[secondCityNum].distance=newDistance;
+            if (!states[secondCityNum].reached || newDistance < states[secondCityNum].distance) {//If path is shorter:
+                states[secondCityNum].distance = newDistance;
                 insertPriorityQueue(queue, neighbors[i]->city2, newDistance);
-                states[secondCityNum].previous=current->number;
-                states[secondCityNum].year=newYear;
-                states[secondCityNum].sure=true;
-                states[secondCityNum].reached=true;
+                states[secondCityNum].previous = current->number;
+                states[secondCityNum].year = newYear;
+                states[secondCityNum].sure = true;
+                states[secondCityNum].reached = true;
                 continue;
             }
-            if(newDistance == states[secondCityNum].distance){//Equal paths;
-                if(states[secondCityNum].year<newYear){//If new path is younger
-                    states[secondCityNum].year=newYear;
-                    states[secondCityNum].previous=current->number;
-                    states[secondCityNum].sure=true;
-                }
-                else if(states[secondCityNum].year==newYear){//path of same age
-                    states[secondCityNum].sure=false;
+            if (newDistance == states[secondCityNum].distance) {//Equal paths;
+                if (states[secondCityNum].year < newYear) {//If new path is younger
+                    states[secondCityNum].year = newYear;
+                    states[secondCityNum].previous = current->number;
+                    states[secondCityNum].sure = true;
+                } else if (states[secondCityNum].year == newYear) {//path of same age
+                    states[secondCityNum].sure = false;
                 }
             }
         }
         free(neighbors);
     }
-    if(!states[end->number].reached || !states[end->number].sure){
+    if (!states[end->number].reached || !states[end->number].sure) {
         removePriorityQueue(queue);
         free(states);
         return NULL;
@@ -133,24 +133,24 @@ CityList findPath(Map* map, City start, City end, unsigned routeToExclude, Conne
     int position = end->number;
     CityList last = NULL;
     bool ended = false;
-    while(!ended){
-        if(!states[position].sure){
+    while (!ended) {
+        if (!states[position].sure) {
             freeCityList(last);
             removePriorityQueue(queue);
             free(states);
             return NULL;
         }
         CityList temp = malloc(sizeof(struct CityList));
-        if(!temp){
+        if (!temp) {
             freeCityList(last);
             removePriorityQueue(queue);
             free(states);
             return NULL;
         }
-        temp->city=states[position].city;
+        temp->city = states[position].city;
         temp->next = last;
         last = temp;
-        if(states[position].previous==position){
+        if (states[position].previous == position) {
             ended = true;
         }
         position = states[position].previous;

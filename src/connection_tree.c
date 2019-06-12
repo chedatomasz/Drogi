@@ -23,27 +23,29 @@ struct ConnectionTree {
 };
 
 static int compareNodes(ConnectionTree t1, ConnectionTree t2);
-static int compareNodes2(ConnectionTree t1, City t2, uint32_t key);
-static ConnectionTree* findInsertion(ConnectionTree* start, ConnectionTree toInsert);
 
-bool addConnection(City city1, City city2, unsigned length, int builtYear){
+static int compareNodes2(ConnectionTree t1, City t2, uint32_t key);
+
+static ConnectionTree *findInsertion(ConnectionTree *start, ConnectionTree toInsert);
+
+bool addConnection(City city1, City city2, unsigned length, int builtYear) {
     Connection connection1 = malloc(sizeof(struct Connection));
-    if(!connection1){
+    if (!connection1) {
         return false;
     }
     Connection connection2 = malloc(sizeof(struct Connection));
-    if(!connection2){
+    if (!connection2) {
         free(connection1);
         return false;
     }
     ConnectionTree tree1 = malloc(sizeof(struct ConnectionTree));
-    if(!tree1){
+    if (!tree1) {
         free(connection1);
         free(connection2);
         return false;
     }
     ConnectionTree tree2 = malloc(sizeof(struct ConnectionTree));
-    if(!tree2){
+    if (!tree2) {
         free(connection1);
         free(connection2);
         free(tree1);
@@ -63,8 +65,8 @@ bool addConnection(City city1, City city2, unsigned length, int builtYear){
     tree2->right = NULL;
     tree1->key = hash(city2->name, KEY_LENGTH);
     tree2->key = hash(city1->name, KEY_LENGTH);
-    ConnectionTree* insertion1 = findInsertion(&(city1->root), tree1);
-    ConnectionTree* insertion2 = findInsertion(&(city2->root), tree2);
+    ConnectionTree *insertion1 = findInsertion(&(city1->root), tree1);
+    ConnectionTree *insertion2 = findInsertion(&(city2->root), tree2);
     *insertion1 = tree1;
     *insertion2 = tree2;
     city1->numOfConnections++;
@@ -72,17 +74,15 @@ bool addConnection(City city1, City city2, unsigned length, int builtYear){
     return true;
 }
 
-Connection getConnection(City city1, City city2){
+Connection getConnection(City city1, City city2) {
     ConnectionTree start = city1->root;
-    while(start!= NULL){
+    while (start != NULL) {
         int comparison = compareNodes2(start, city2, hash(city2->name, KEY_LENGTH));
-        if(comparison<0){
+        if (comparison < 0) {
             start = start->left;
-        }
-        else if(comparison > 0){
+        } else if (comparison > 0) {
             start = start->right;
-        }
-        else{
+        } else {
             return start->content;
         }
     }
@@ -95,19 +95,19 @@ Connection getConnection(City city1, City city2){
  * @param allConnections Tablica do któregj wpisujemy połączenia
  * @param counter licznik wpisanych połączeń i pozycja kolejnych wpisań
  */
-static void recursiveGetConnections(ConnectionTree city1, Connection* allConnections, int* counter){
-    if(!city1){
+static void recursiveGetConnections(ConnectionTree city1, Connection *allConnections, int *counter) {
+    if (!city1) {
         return;
     }
-    allConnections[*counter]=city1->content;
+    allConnections[*counter] = city1->content;
     (*counter)++;
     recursiveGetConnections(city1->left, allConnections, counter);
     recursiveGetConnections(city1->right, allConnections, counter);
 }
 
-Connection* getAllConnections(City city1){
-    Connection* allConnections = malloc(sizeof(Connection)*(size_t)(city1->numOfConnections));
-    if(!allConnections){
+Connection *getAllConnections(City city1) {
+    Connection *allConnections = malloc(sizeof(Connection) * (size_t) (city1->numOfConnections));
+    if (!allConnections) {
         return NULL;
     }
     int counter = 0;
@@ -115,8 +115,8 @@ Connection* getAllConnections(City city1){
     return allConnections;
 }
 
-void freeConnectionTree(ConnectionTree node){
-    if(!node){
+void freeConnectionTree(ConnectionTree node) {
+    if (!node) {
         return;
     }
     free(node->content);
@@ -131,12 +131,11 @@ void freeConnectionTree(ConnectionTree node){
  * @param toInsert węzeł do wstawienia
  * @return adres miejsca, gdzie należy wstawić węzeł
  */
-static ConnectionTree* findInsertion(ConnectionTree* start, ConnectionTree toInsert){
-    while(*start != NULL){
-        if(compareNodes(*start, toInsert) <0){
+static ConnectionTree *findInsertion(ConnectionTree *start, ConnectionTree toInsert) {
+    while (*start != NULL) {
+        if (compareNodes(*start, toInsert) < 0) {
             start = &((*start)->left);
-        }
-        else{
+        } else {
             start = &((*start)->right);
         }
     }
@@ -149,11 +148,11 @@ static ConnectionTree* findInsertion(ConnectionTree* start, ConnectionTree toIns
  * @param t2 drugi węzeł
  * @return -1 jeśli t1<t2, 1 jeśli t1>t2, 0 jeśli są równe
  */
-static int compareNodes(ConnectionTree t1, ConnectionTree t2){
-    if(t1->key < t2->key){
+static int compareNodes(ConnectionTree t1, ConnectionTree t2) {
+    if (t1->key < t2->key) {
         return -1;
     }
-    if(t1->key > t2->key){
+    if (t1->key > t2->key) {
         return 1;
     }
     return strcmp(t2->content->city2->name, t1->content->city2->name);
@@ -166,11 +165,11 @@ static int compareNodes(ConnectionTree t1, ConnectionTree t2){
  * @param key klucz "drugiego węzła"
  * @return -1 jeśli t1<t2, 1 jeśli t1>t2, 0 jeśli są równe
  */
-static int compareNodes2(ConnectionTree t1, City t2, uint32_t key){
-    if(t1->key < key){
+static int compareNodes2(ConnectionTree t1, City t2, uint32_t key) {
+    if (t1->key < key) {
         return -1;
     }
-    if(t1->key > key){
+    if (t1->key > key) {
         return 1;
     }
     return strcmp(t2->name, t1->content->city2->name);
@@ -180,49 +179,48 @@ static int compareNodes2(ConnectionTree t1, City t2, uint32_t key){
  * @brief Usuwa węzeł wskazywany przez target z drzewa zachowujac własności BST
  * @param target Węzeł do usunięcia
  */
-void removeNode(ConnectionTree* target){
-    if(!((*target)->left) && !((*target)->right)){
+void removeNode(ConnectionTree *target) {
+    if (!((*target)->left) && !((*target)->right)) {
         free((*target)->content);
         free(*target);
-        *target=NULL;
+        *target = NULL;
         return;
     }
-    if(!((*target)->left)){
+    if (!((*target)->left)) {
         ConnectionTree temp = (*target)->right;
         free((*target)->content);
         free(*target);
-        *target=temp;
+        *target = temp;
         return;
     }
-    if(!(*target)->right){
+    if (!(*target)->right) {
         ConnectionTree temp = (*target)->left;
         free((*target)->content);
         free(*target);
-        *target=temp;
+        *target = temp;
         return;
     }
-    ConnectionTree* minRightSubTree = &((*target)->right);
-    while((*minRightSubTree)->left){
-        minRightSubTree = &((*minRightSubTree) ->left);
+    ConnectionTree *minRightSubTree = &((*target)->right);
+    while ((*minRightSubTree)->left) {
+        minRightSubTree = &((*minRightSubTree)->left);
     }
     free((*target)->content);
-    (*target)->content=(*minRightSubTree)->content;
-    (*target)->key=(*minRightSubTree)->key;
+    (*target)->content = (*minRightSubTree)->content;
+    (*target)->key = (*minRightSubTree)->key;
     (*minRightSubTree)->content = NULL;
     removeNode(minRightSubTree);
 }
-void removeConnection(City city1, City city2){
+
+void removeConnection(City city1, City city2) {
     ConnectionTree *start = &(city1->root);
     city1->numOfConnections--;
-    while(*start!= NULL){
+    while (*start != NULL) {
         int comparison = compareNodes2(*start, city2, hash(city2->name, KEY_LENGTH));
-        if(comparison<0){
-           start = &((*start)->left);
-        }
-        else if(comparison > 0){
+        if (comparison < 0) {
+            start = &((*start)->left);
+        } else if (comparison > 0) {
             start = &((*start)->right);
-        }
-        else{
+        } else {
             removeNode(start);
             return;
         }

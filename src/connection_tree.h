@@ -14,12 +14,12 @@
 /**
  * Struktura przechowująca informacje o pojedynczym drzewie sąsiedztwa.
  */
-typedef struct ConnectionTree* ConnectionTree;
+typedef struct ConnectionTree *ConnectionTree;
 
 /**
  * Struktura przechowująca informacje o pojedynczym połączeniu.
  */
-typedef struct Connection* Connection;
+typedef struct Connection *Connection;
 
 /**
  * Definicja struktury przechowująca informacje o pojedynczym połączeniu.
@@ -52,7 +52,7 @@ Connection getConnection(City city1, City city2);
  * @return Wskaźnik na strukturę w przypadku powodzenia lub NULL, gdy nie udało się zaalokować pamięci.
  * Informacja o rozmiarze tablicy jest zawarta w City->numOfConnections.
  */
-Connection* getAllConnections(City city1);
+Connection *getAllConnections(City city1);
 
 /** @brief Zwalnia drzewo sąsiedztwa wskazywane przez node;
  */

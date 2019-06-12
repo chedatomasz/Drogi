@@ -8,26 +8,26 @@
 /**
  * Struktura przechowująca informacje o pojedynczej drodze krajowej.
  */
-typedef struct Route* Route;
+typedef struct Route *Route;
 /**
  * @brief Lista dróg krajowych przechodzących przez węzeł.
  * Przeznaczona do przechowywania przez miasto.
  */
-typedef struct RouteNumber* RouteNumber;
+typedef struct RouteNumber *RouteNumber;
 /**
  * Lista miast - przechowuje ścieżkę.
  */
-typedef struct CityList* CityList;
+typedef struct CityList *CityList;
 /**
  * Deklaracja aby uniknąć kołowego załączenia nagłówków.
  */
-typedef struct City* City;
+typedef struct City *City;
 
 /**
  * @brief Lista dróg krajowych przechodzących przez węzeł.
  * Przeznaczona do przechowywania przez miasto.
  */
-struct RouteNumber{
+struct RouteNumber {
     unsigned number; ///< Numer drogi krajowej.
     RouteNumber next; ///< Wskaźnik na kolejny element listy.
 };
@@ -35,17 +35,18 @@ struct RouteNumber{
  * @brief Lista miast przechowująca ścieżkę.
  * Można założyć, że elementy znajdujące się kolejno na CityList są sąsiadami
  */
-struct CityList{
+struct CityList {
     City city; ///< Wskaźnik na miasto.
-    CityList  next;///< Wskaźnik na kolejny element listy.
+    CityList next;///< Wskaźnik na kolejny element listy.
 };
 /**
  * @brief Struktura przechowująca informacje o pojedynczej drodze krajowej.
  * Wrapper na CityList.
  */
-struct Route{
+struct Route {
     CityList first;///< Pierwszy element ścieżki.
 };
+
 /**
  * @brief Zwalnia CityList wskazywane przez list.
  * Nie zwalnia przechowywanych w węzłach miast.
@@ -59,4 +60,5 @@ void freeCityList(CityList list);
  * @param[in] list - wskaźnik na drogę do zwolnienia.
  */
 void freeRoute(Route route);
+
 #endif //DROGI_ROUTE_H

@@ -31,11 +31,14 @@ int peek();
  * @param delimiter znak, którym rozdzielamy wyrazy.
  * @return Początek kolejnego tokena
  */
-char* tokenize(char** line, char delimiter);
+char *tokenize(char **line, char delimiter);
 
 unsigned getUnsignedFromString(char *token);
 
 int getIntFromString(char *token);
 
-bool checkAddRouteSyntax(const char* line);
+bool checkAddRouteSyntax(const char *line);
+
+size_t getCityNum(const char *line);
+
 #endif //DROGI_INPUT_H

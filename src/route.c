@@ -3,8 +3,9 @@
 //
 #include "route.h"
 #include <stdlib.h>
+
 void freeCityList(CityList list) {
-    while(list){
+    while (list) {
         CityList temp = list->next;
         free(list);
         list = temp;
@@ -12,7 +13,7 @@ void freeCityList(CityList list) {
 }
 
 void freeRoute(Route route) {
-    if(route){
+    if (route) {
         freeCityList(route->first);
         free(route);
     }

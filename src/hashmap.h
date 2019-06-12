@@ -15,7 +15,7 @@
  * @brief Struktura przechowująca dowolny void* i jego klucz - String.
    Ilość komórek jest potęgą 2 mniejszą od 2^32.
  */
-typedef struct Hashmap* Hashmap;
+typedef struct Hashmap *Hashmap;
 
 /** @brief Tworzy nową strukturę.
  * Tworzy nową, pustą strukturę niezawierającą żadnych void* ani kluczy.
@@ -39,7 +39,7 @@ void deleteCitiesHashmap(Hashmap hashmap);
 * @param[in] city1    – wskaźnik na string, który jest kluczem szukanego obiektu.
 * @return Wskaźnik na struct City lub NULL, gdy nie znaleziono obiektu.
 */
-City getCity(Hashmap hashmap, const char* city1);
+City getCity(Hashmap hashmap, const char *city1);
 
 /** @brief Dodaje obiekt city do hashmapy.
  * Odnajduje odpowiednią komórkę hashmapy i tworzy nowy element listy zawierający City.
@@ -49,7 +49,7 @@ City getCity(Hashmap hashmap, const char* city1);
  * Wartość @p false, jeśli wystąpił błąd: @p hashmap lub @p city1 to NULL,
  * lub nie udało się zaalokować pamięci.
  */
-bool addCity (Hashmap hashmap, City city1);
+bool addCity(Hashmap hashmap, City city1);
 
 /** @brief Usuwa obiekt city z hashmapy.
  * Odnajduje odpowiednią komórkę hashmapy, zwalnia element listy i sam obiekt City.
@@ -59,7 +59,7 @@ bool addCity (Hashmap hashmap, City city1);
  * Wartość @p false, jeśli wystąpił błąd: @p hashmap to NULL,
  * lub @p hashmap nie zawiera obiektu o podanym kluczu.
  */
-bool removeCity (Hashmap hashmap, const char* city1);
+bool removeCity(Hashmap hashmap, const char *city1);
 
 /**
  * @brief Oblicza hash danego klucza, zwraca wynik obcięty do bits bitóœ
@@ -67,5 +67,6 @@ bool removeCity (Hashmap hashmap, const char* city1);
  * @param bits Liczba bitów wyniku <=32
  * @return Obliczony hash
  */
-uint32_t hash(const char* key, unsigned int bits);
+uint32_t hash(const char *key, unsigned int bits);
+
 #endif //DROGI_HASHMAP_H

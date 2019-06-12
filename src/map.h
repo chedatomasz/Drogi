@@ -23,7 +23,7 @@ typedef struct Map Map;
  * @return Wskaźnik na utworzoną strukturę lub NULL, gdy nie udało się
  * zaalokować pamięci.
  */
-Map* newMap(void);
+Map *newMap(void);
 
 /** @brief Usuwa strukturę.
  * Usuwa strukturę wskazywaną przez @p map.
@@ -47,6 +47,18 @@ void deleteMap(Map *map);
  */
 bool addRoad(Map *map, const char *city1, const char *city2,
              unsigned length, int builtYear);
+
+/** @brief Dodaje do mapy drogę krajową o podanym opisie.
+ * Jeśli któreś z podanych miast nie istnieje, to dodaje go do mapy, a następnie
+ * dodaje do mapy odcinek drogi między tymi miastami.
+ * @param[in,out] map    – wskaźnik na strukturę przechowującą mapę dróg;
+ * @param[in] line     – wskaźnik na napis z opisem drogi, jest zmieniany przez funkcję.
+ * @return Wartość @p true, jeśli droga została dodana.
+ * Wartość @p false, jeśli wystąpił błąd: któryś z parametrów ma niepoprawną
+ * wartość, opis nie jest poprawnym opisem drogi, podana droga już istnieje
+ * lub nie udało się zaalokować pamięci.
+ */
+bool addRoute(Map *map, char *line);
 
 /** @brief Modyfikuje rok ostatniego remontu odcinka drogi.
  * Dla odcinka drogi między dwoma miastami zmienia rok jego ostatniego remontu
@@ -148,22 +160,23 @@ bool removeRoute(Map *map, unsigned routeId);
  * @param[in] routeId    – numer drogi krajowej.
  * @return Wskaźnik na napis lub NULL, gdy nie udało się zaalokować pamięci.
  */
-char const* getRouteDescription(Map *map, unsigned routeId);
+char const *getRouteDescription(Map *map, unsigned routeId);
 
-typedef struct CityList* CityList;///< Deklaracja aby uniknąć załączania w kółko.
+typedef struct CityList *CityList;///< Deklaracja aby uniknąć załączania w kółko.
 
 /** @brief umożliwia łatwy dostęp do listy wszystkich miast na mapie
  * @param map  - przeszukiwana mapa.
  * @return  - lista miast.
  */
 CityList getCityList(Map *map);
+
 #endif /* __MAP_H__ */
 
 /** @brief Funkcja weryfikująca, czy string spełnia warunki nazwy miasta*/
 bool verifyCityName(const char *city1);
 
 /** @brief Funkcja weryfikująca, czy unsigned spełnia warunki numeru nowej drogi*/
-bool verifyRouteNumber(Map* map, unsigned routeNumber);
+bool verifyRouteNumber(Map *map, unsigned routeNumber);
 
 /**
  * @brief Dodaje do mapy drogę o danym numerze składającą się z list.
@@ -174,7 +187,7 @@ bool verifyRouteNumber(Map* map, unsigned routeNumber);
  * @param list lista miast, z których składa się nowa droga
  * @return true w przypadku powodzenia, w przeciwnym razie false
  */
-bool addRouteExplicit(Map* map, unsigned routeNumber, CityList list);
+bool addRouteExplicit(Map *map, unsigned routeNumber, CityList list);
 
 /**
  * @brief Tworzy nową listę miast zawierającą dane miasto
@@ -182,7 +195,7 @@ bool addRouteExplicit(Map* map, unsigned routeNumber, CityList list);
  * @param city nazwa dodawanego miasta
  * @return Wskaźnik w przypadku powodzenia, NULL w przeciwnym razie
  */
-CityList newCityList(Map* map, char* city);
+CityList newCityList(Map *map, char *city);
 
 /**
  * @brief Dodaje do listy miast istniejące miasto o nazwie city
@@ -192,7 +205,7 @@ CityList newCityList(Map* map, char* city);
  * @param city nazwa dodawanego miasta
  * @return Wskaźnik na koniec w przypadku powodzenia, NULL w przeciwnym razie
  */
-CityList addCityToCityList(Map* map, CityList list, char* city);
+CityList addCityToCityList(Map *map, CityList list, char *city);
 
 /** @brief Funkcja usuwająca list. Nie usuwa zawartych miast */
 void removeCityList(CityList list);
@@ -207,7 +220,8 @@ void removeCityList(CityList list);
  * @param year Rok budowy/remontu drogi - nie starszy niż istniejący.
  * @return Status zgodnie z poniższymi definicjami.
  */
-int roadStatus(Map *map, char* city1, char* city2, unsigned length, int year);
+int roadStatus(Map *map, char *city1, char *city2, unsigned length, int year);
+
 #define ROAD_NOT_FOUND 0///<A define for roadStatus
 #define ROAD_CONFLICTING 1///<A define for roadStatus
 #define ROAD_TO_REPAIR 2///<A define for roadStatus
